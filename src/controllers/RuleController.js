@@ -32,26 +32,25 @@ export default class RuleController {
     
     firstFind = () => {
         //console.log(this.xmlText);
-        //alert(this.puroXML);    
-       // console.log(this.puroXML);
-        $(this.puroXML).find("puro\\:BRelation").each(function () {
+        var puroXML = this.puroXML;
+        var rulesJson = this.rulesJson;
+        $(puroXML).find("puro\\:BRelation").each(function () {
            
             $(this).find("puro\\:linkedTo").each(function () {
                 var resource = ($(this).attr("rdf:resource"));
                 //console.log($(puroXML).find('[rdf\\:about="'+resource+'"]')[0]);
-                var linkedElement = $(this.puroXML).find('[rdf\\:about="' + resource + '"]');
-                alert(resource);
+                console.log($(puroXML));
+                var linkedElement = $(puroXML).find('[rdf\\:about="' + resource + '"]');
+
                 if (linkedElement[0].tagName == "puro:BObject") // do BTYPE!!!!!!!!!!!!!!
                 {
                     var BTypeName = linkedElement.find("puro\\:instanceOf").attr("rdf:resource");
                     // parse or find -> doesnt matter -> cut to get name 
-                    for (let i in this.rulesJson.rules) {
-
-                        if (this.rulesJson.rules[i].fromPuro == "BObject" && this.rulesJson.rules[i].fromOnto == "") {
-                            //return ["What type is Author??",Array.from(this.rulesJson.classes), BTypeName]; 
-                            alert("OK");
+                    for (let i in rulesJson.rules) {
+                        //vrat skutecny nazev
+                        if (rulesJson.rules[i].fromPuro == "BObject" && rulesJson.rules[i].fromOnto == "") {
+                            return ["What type is Author??",Array.from(this.rulesJson.classes), BTypeName]; 
                         }
-
                     }
 
                     // this.setState(buttons: [])
