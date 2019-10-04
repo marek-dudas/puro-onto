@@ -1,0 +1,11 @@
+{"rules":[
+   {"puroType" : "BType", "fromPuro": "BObject", "fromOnto": "", "offer": [0]},
+   {"puroType" : "", "fromPuro": "BType", "fromOnto": "Role", "offer": [1,2,3,4,5,6,7,9,10]},
+   {"puroType" : "BType", "fromPuro": "BObject", "fromOnto": "sds", "offer": ""},
+   {"puroType" : "BType", "fromPuro": "BObject", "fromOnto": "sdsd", "offer": 0},
+   {"puroType" : "BType", "fromPuro": "BObject", "fromOnto": "dsds", "offer": 0}
+  ],
+  "classes":[
+  "Kind", "Subkind","Phase","Role", "Collective", "Quantity", "Relator","Category","RoleMixin","Mixin","Mode","Quality"
+  ]
+  }
