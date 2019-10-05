@@ -1,0 +1,12 @@
+{"rules":
+    [
+      {"name" : "URL_PUBLISHED", "type": "relation"},
+      {"name" : "May", "type": "valuation"}, 
+      {"name":"prague", "type": "instance"},
+      {"name": "location", "type": "object"},
+      {"name": "historyOfDogs", "type": "subObject"},
+      {"name": "book", "type": "object"},
+      {"name" : "hasTopic", "type": "relation"}
+
+    ]
+}

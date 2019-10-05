@@ -28,16 +28,16 @@ class InputField extends React.Component {
     event.preventDefault();
     // this.inputParse(this.state.value)
     
-    this.ruleController.firstFind(); 
+    var results = this.ruleController.firstFind(); 
+ 
+    //this.setState({buttons: results[1], title: results[2]});
 
-    
-    
   }
 
   handleClick = (selected) => {
     
      this.setState({buttons: ["AHOJ","blbe","srpe"]});
-
+    
      //zkontroluj jestli má subtype jestli má subtype -> jestli vybere kind jdi zpátky na relation 
 
     
