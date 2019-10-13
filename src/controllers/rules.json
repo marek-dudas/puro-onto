@@ -1,7 +1,12 @@
-{"rules":[
-   {"puroType" : "BType", "fromPuro": "BObject", "fromOnto": "", "offer": [0]},
-   {"puroType" : "", "fromPuro": "BType", "fromOnto": "Role", "offer": [1,2,3,4,5,6,7,9,10]},
-   {"puroType" : "BType", "fromPuro": "BObject", "fromOnto": "sds", "offer": ""},
+
+
+{  
+   
+   "rules":[
+   {"puroType" : "BType", "fromPuro": "", "fromOnto": "", "offer": [100]}
+   {"puroType" : "BType", "fromPuro": "Role", "fromOnto": "BType", "offer": [1,2,9,10]},
+   {"puroType" : "", "fromPuro": "BType", "fromOnto": "Role", "offer": [1,2,4]},
+   {"puroType" : "", "fromPuro": "BObject", "fromOnto": "Mode", "offer": [1,2,3,4,5,6]},
    {"puroType" : "BType", "fromPuro": "BObject", "fromOnto": "sdsd", "offer": 0},
    {"puroType" : "BType", "fromPuro": "BObject", "fromOnto": "dsds", "offer": 0}
   ],
