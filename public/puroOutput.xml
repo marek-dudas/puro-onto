@@ -11,7 +11,7 @@
       <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#published_in" />
       <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#has_topic" />
       <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Book" />
-   </puro:BType>
+   </puro:BType>   
    <puro:BObject rdf:about="http://lod2-dev.vse.cz/data/puromodels#Mareks_copy_of_The_history_of_dogs">
       <rdfs:label>Mareks_copy_of_The_history_of_dogs</rdfs:label>
       <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />

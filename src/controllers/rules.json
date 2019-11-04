@@ -1,16 +1,34 @@
-
-
 {  
-   
-   "rules":[
-   {"puroType" : "BType", "fromPuro": "", "fromOnto": "", "offer": [100]}
-   {"puroType" : "BType", "fromPuro": "Role", "fromOnto": "BType", "offer": [1,2,9,10]},
-   {"puroType" : "", "fromPuro": "BType", "fromOnto": "Role", "offer": [1,2,4]},
-   {"puroType" : "", "fromPuro": "BObject", "fromOnto": "Mode", "offer": [1,2,3,4,5,6]},
-   {"puroType" : "BType", "fromPuro": "BObject", "fromOnto": "sdsd", "offer": 0},
-   {"puroType" : "BType", "fromPuro": "BObject", "fromOnto": "dsds", "offer": 0}
+  "commonRules":[
+    {"fatherPuro": "BType", "fatherOnto": "Kind","childPuro": "BObject","hasRelation": 1, "offer": [1,2,3]},
+    {"fatherPuro": "", "fatherOnto": "","childPuro": "BType","hasRelation": 0, "offer": [1]}
   ],
   "classes":[
-  "Kind", "Subkind","Phase","Role", "Collective", "Quantity", "Relator","Category","RoleMixin","Mixin","Mode","Quality"
+  "Kind", "Subkind","Phase","Role", "Collective", "Quantity", "Relator","Category","RoleMixin","Mixin","Mode","Quality", "None"
+  ],
+  "questions":[
+      "What type is VAL?",
+      "Which classes is represented by VAL?"
+  ],
+  "Role":[
+    {"connect": ["Role","Subkind","Kind"], "question": "1" },
+    {"findRelation": true, "question": "2"},
+    {"connect": ["Subkind", "Role", "Phase"], "relation": true,"question": "3"},
+    {"create": "Relator", "selected": ["Role", "Phase"], "question": "4", "relation":true, "from": -2, "to": -1}
+    ],
+  "mode":[
+    {"connect": ["kind","subkind"], "question": "Which element is connected to VAL?" },
+    {"findRelation": true, "question": "2"},
+    {"connect": ["kind","subkind"], "question": "2"}
+  ],
+  "phase":[
+    {"connect": ["kind","subkind"], "question": "Which element is connected to sdsdsdsddsds VAL?" },
+    {"findRelation": true, "question": "2"},
+    {"connect": ["kind","subkind"], "question": "2"}
+  ],
+  "Kind":[
+    {"end": true}
   ]
   }
+
+  

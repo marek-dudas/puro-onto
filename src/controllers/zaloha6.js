@@ -1,7 +1,9 @@
 import jsonData from './rules.json';
 import RdfController from './RdfController.js';
-import $ from 'jquery';
 
+import $ from 'jquery';
+import { throwStatement, logicalExpression, tsThisType } from '@babel/types';
+import { isFulfilled, async, allSettled } from 'q';
 
 
 export default class RuleController {
@@ -15,7 +17,8 @@ export default class RuleController {
             this.queryTree = results;   
             console.log(results);        
         }.bind(this));
- 
+
+        //tree bude tady 
         this.ontoModel = [];
         this.index = 0;
         this.ruleIndex = 0;
@@ -24,6 +27,88 @@ export default class RuleController {
         this.selectedType =null;
         this.lastSelectedType = null;
     }
+    getButtons = () => {
+        var rulesJson = this.rulesJson;
+       
+       
+        var element = this.queryTree[this.index];
+        var stop = false;    
+        if ('child' in element) {
+            if (element.child.length === 0 && element.connect.length === 0 && element.connectFrom.length === 0)
+            {
+               
+                this.index ++; 
+                element = this.queryTree[this.index];
+              
+            }
+            else 
+            {
+                stop = true;
+            }
+        } 
+
+
+        var label  = element.label.value; 
+        var puroType = element.type.value.split('#')[1];
+        var relation = "";
+        var father = ""; 
+        var fromOnto = "";
+        var linkedTo = 0;
+        var question = "";
+
+        
+        if ('fatherTypeRelation' in element) {
+           relation = this.delUri(element.fatherTypeRelation[0]);
+        }
+        
+
+        fromOnto = this.getFatherOntoType(element);
+        
+        if ('connect' in element && element.connect !== null) {
+            linkedTo = element.connect.length;
+        }
+        // víc tatku pole
+        if (puroType === "BType" && this.delUri(element.fatherType[0]) !== "BType") {
+           question =  rulesJson.questions[0].replace("VAL",label);
+        }
+        else
+        {
+      
+          // Zeptej se zda reprezentuje nějaký datatyp
+          question =  rulesJson.questions[1].replace("VAL",label);
+        } 
+        
+        // ještě dopň vztahy
+        //  this.ontoModel.push({uri: element.uri.value, label: label, from: father, ontoType: "", puroType: puroType});
+        var result = []; 
+        for (let i in rulesJson.rules) {
+           // rulesJson.rules[i].puroType ===  puroType && 
+            if (fromOnto.includes(rulesJson.rules[i].fromOnto) &&
+                rulesJson.rules[i].relation === relation &&
+                rulesJson.rules[i].linkedTo <= linkedTo  
+                ) {      
+                // ošetřit když se pravidlo nenajde
+                if (rulesJson.rules[i].offer === 0)
+                {
+                    result = rulesJson.classes.map(function (ruleEl) {
+                        return {"name": ruleEl, "uri":null};
+                      });
+                    return  {"buttons": result,"title": question};
+                } 
+
+                else
+                {
+                   // OPRAV NAMAPUJ!!!!!!!!!!!!!!!!!!!!!!!!
+                   for(let val of rulesJson.rules[i].offer) 
+                   { 
+                       result.push({"name":rulesJson.classes[val], "uri":null}); 
+                   }
+                   return {"buttons": result, "title": question};
+                }
+                
+            }
+        }
+    }
     
     // je třeba checkovat ontoModel 
     ruleSelection =  (rule, element, uri) => 
@@ -31,30 +116,13 @@ export default class RuleController {
         
         if ("connect" in rule[this.ruleIndex]) 
         {
-            
+           
             //pokud type selection zeptej se na typ konkrétního elementu!
             // může mít dva tatky projít cyklem 
             //podívej se jestli už není určen
-            //check element father 
-            //fathers type 
-
-            var fatherOntoType = []; 
-            for(let father of element.father)
-            {      
-                for (let node of this.ontoModel)
-                {
-                    if (father === node.uri)
-                    {
-                       fatherOntoType.push(node.ontoType); 
-                    }
-                }
-            }
-     
-            
-            // tohle je blbě je zle -> ochcávka
-            if(rule[this.ruleIndex].connect.some(r=> fatherOntoType.includes(r)) && this.delUri(element.type.value)!=="BObject")
+            if(rule[this.ruleIndex].connect.includes(this.ontoModel[this.index-2].ontoType.toLowerCase()) && this.typeSelection === false && this.selectedEl===null
+            && 'father' in element )
             {
-               
                 return false; 
             }
             else
@@ -127,127 +195,70 @@ export default class RuleController {
         else if ("create" in rule[this.ruleIndex])
         { 
             
-            var returnVal = [{"name": "yes", "uri": null, "createdClass": rule[this.ruleIndex].create}, {"name": "no", "uri": null}]
+            var returnVal = [{"name": "yes", "uri": rule[this.ruleIndex].create}, {"name": "no", "uri": null}]
             return Promise.resolve({"buttons": returnVal, "title":rule[this.ruleIndex.question]}); 
         }
         else if ("relation" in rule[this.ruleIndex])
         {
 
         }
-        else if ("end" in rule[this.ruleIndex])
-        {
-        
-            return true; 
-           // return Promise.resolve({"buttons": result, "title": });
-        }
 
 
 
     }
 
-    getDefault = () =>
+    nextElement = async (selectedType, selectedUri, relName) =>
     {
-         var result;
-        
-         result = this.rulesJson.classes.map(function (ruleEl) {
-            return {"name": ruleEl, "uri":null};
-          });
-         return  {"buttons": result,"title": this.queryTree[this.index].label.value};   
 
-    }
-
-    commonRuleSelection = (element) => 
-    {
-        var result = [];
-        var fatherOnto = [];
-        var connection = 0;
-        if (element.connect !== null)
-        {
-            connection = element.connect.length + element.connectFrom.length; 
-        }
-   
-        var fatherPuro =  this.delUri(element.fatherType);
-        var childPuro =   this.delUri(element.childType);
         
-        for (let node of this.ontoModel)
-        {
-            if (element.father.includes(node.uri)) {
-                fatherOnto.push(node.ontoType);
-            }
-        }
-        
-        for (var rule of this.rulesJson.commonRules)
-        {
-            
-            if ((fatherOnto.includes(rule.fatherOnto) || (fatherOnto.length === 0 && rule.fatherOnto === "")) &&
-                (fatherPuro.includes(rule.fatherPuro) || (fatherPuro.length === 0 && rule.fatherPuro === "")) &&
-                childPuro.includes(rule.childPuro) || childPuro === rule.childPuro &&
-                rule.hasRelation <= connection
-                )
-            {
-                for(let val of rule.offer) 
-                { 
-                    result.push({"name":this.rulesJson.classes[val], "uri":null}); 
-                }
-                return {"buttons": result, "title": element.label.value};
-            }
-        }
-    }
-
-    // addToOntotype blbě je FROM !!!!
-    nextElement = async (selectedType, selectedUri, createdClass) =>
-    {  
+        // možná jde vylepšit líp
         var rule; 
-        var element;
-        //Uloží do meta modelu po zvolení parametru
+        // test!!!!!!!!!
         
-      
-        if(this.rulesJson.classes.includes(selectedType) && !selectedUri)
+        if (this.selectedEl === null)
         {
-            if (this.index !== 0)
-            {
-                this.index++; 
-            }
-            this.selectedType = selectedType; 
-            this.addToOntoModel(selectedType); 
-            
+            var element = this.getNextElement();
         }
-        
-        if (this.selectedEl === null && !selectedUri)
+        else 
         {
-            element = this.getNextElement();
-            this.selectedEl = element;
-        }
-        else if (selectedUri) 
-        {   
             for (let node of this.queryTree)
             {
-                if(node.uri.value === selectedUri)
+                if(node.uri.value === this.selectedEl)
                 {
                     element = node;
-                    this.selectedEl = element;
                     break;
                 }
             }
+        }
+        
+        //tohle jde udělat určitě líp
+        if(this.typeSelection === true)
+        {
+            // tohle je hovno 
+            this.addToOntoModel(selectedType); 
+            this.typeSelection = false; 
+            this.index ++;
 
+        }   
+        
+        
+        if (this.selectedType === null)
+        {
+            
+            rule = this.rulesJson[selectedType.toLowerCase()];
         }
         else
         {
-            element = this.selectedEl; 
+            rule = this.rulesJson[this.selectedType.toLowerCase()];
+            
         }
-
-  
-
-
-        rule = this.rulesJson[this.selectedType];  
-        
 
         if(selectedType === "yes" || selectedType === "no")
         {
             if(selectedType === "yes")
             {
                 
-                this.addToOntoModel(createdClass, "new", rule);
+                this.addToOntoModel(selectedUri, "new", rule);
                 selectedUri = null; 
             }
             else
@@ -256,39 +267,78 @@ export default class RuleController {
             }
 
         }
- 
-        if (this.ruleIndex === rule.length )
+
+    
+
+        // tohle je mrdla přidej jako elemen 
+        if(selectedUri)
         {
-            this.ruleIndex = 0;            
+            this.selectedEl = selectedUri;
+        }
+        else if (this.selectedEl && this.ruleIndex !== rule.length)
+        {
+
+            this.addToOntoModel(selectedType, this.selectedEl);
+            this.lastSelectedType = selectedType
         }
 
-        var ruleResult = this.ruleSelection(rule,element, selectedUri);
-        
 
-        while (ruleResult === false) {
-            this.ruleIndex ++;
-            ruleResult = this.ruleSelection(rule,element, selectedUri);             
-        }
-        
-        if(ruleResult === true)
-        {
-            if (this.index > 1)
-            {
-                this.selectedEl = this.getNextElement();
-                element = this.selectedEl; 
+
+        // == 2 jen pro devbug
+        if ((this.index > 1 && this.ruleIndex < rule.length) || (this.selectedEl !== null && this.ruleIndex === rule.length)) {  
+           
+            if (this.ruleIndex === 0 && !selectedUri) {
+                this.selectedType = selectedType;
             }
-            this.ruleIndex = 0;
-            return Promise.resolve(this.commonRuleSelection(element));
-        }
-        else
-        {
+            
+            if ((this.ruleIndex === rule.length && this.selectedEl !== null))
+            {
+                this.ruleIndex = 0;            
+            }
+
+ 
+            
+            var ruleResult = this.ruleSelection(rule,element, selectedUri);
+            //what type is ddc topic 
+            //možná by se hodilo posílat selecte
+            console.log("je");
+            console.log(ruleResult);
+            while (ruleResult === false) {
+                this.ruleIndex ++;
+                ruleResult = this.ruleSelection(rule,element, selectedUri);    
+                 
+            }
+            
+    
             return new Promise(resolve => {ruleResult.then(function(results) {
                 this.ruleIndex ++;
                 resolve(results);
             }.bind(this));
             });
+
+            // return formate rule result
         }
+        else {
             
+            this.ruleIndex = 0;
+            this.selectedType = null;
+        
+        }
+        
+       
+        if (this.ruleIndex === 0)
+        {
+        //smazat v return buttons
+        this.typeSelection = true;
+       
+        return new Promise(resolve => {
+        // do stromu doplňuje info o relation
+            resolve(this.getButtons()); 
+        }); 
+        }
+
+
+
     }
 
     addToOntoModel = (selected, elementUri, rule) => 
@@ -360,18 +410,9 @@ export default class RuleController {
 
     delUri = (uri) => 
     {
-        var result = []; 
         if (typeof uri === 'string')
         {
             return uri.split('#')[1];
-        }
-        else if (Array.isArray(uri))
-        {
-            for(let element of uri)
-            {
-                result.push(element.split('#')[1]);
-            }
-            return result; 
         }
         else
         {
@@ -404,10 +445,7 @@ export default class RuleController {
                 }
                 index = 0;  
             }
-            
         }
-
-       
         return this.queryTree[this.index];
 
     }

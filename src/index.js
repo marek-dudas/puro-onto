@@ -5,6 +5,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import $ from 'jquery';
 //import yuml_diagram from "yuml-diagram";
 import RuleController from './controllers/RuleController.js'; 
+import RdfController from './controllers/RdfController.js';
+import { thisTypeAnnotation } from "@babel/types";
 
 
 class InputField extends React.Component {
@@ -12,10 +14,13 @@ class InputField extends React.Component {
     super(props);
     this.state = {
       fieldValue: '', transformed: false, svg: null, title: "", fatherUrl: "", 
-      buttons: ["Kind", "Role", "Collection", "Datatypy", "Subkind"], 
+      buttons: [], order: 0, 
+      ontoModel: [], queryRoots: [], roots: []
+     
     };
 
     this.ruleController = new RuleController();
+    //this.RdfController = new RuleController(); 
    
   }
 
@@ -25,23 +30,149 @@ class InputField extends React.Component {
   }
 
   handleSubmit = (event) => {
-    event.preventDefault();
-    // this.inputParse(this.state.value)
-    
+    event.preventDefault(); 
+    var rules = this.ruleController.getDefault();
+    this.setState({buttons: rules.buttons, title: rules.title});
+    /*
+    var path = this.ruleController.getFullPath();
+    console.log(path);
+    path.then(function(results) {
+        console.log("IN");
+        console.log(results);
+
+        this.setState({queryTree: results}); 
+        
+        var buttons = this.ruleController.getButtons("BType", ""); 
+        this.setState({ order: 0, 
+        title: results[0].label.value, 
+        buttons: buttons,
+        });
+
+
+      }.bind(this));
+      */
+
+     /*
+    // někde ulož informaci, že se jedná o first call a pak s tim pracuj
     var results = this.ruleController.firstFind(); 
- 
-    //this.setState({buttons: results[1], title: results[2]});
+    
+    results.then(function(result) {
+      console.log(result);
+      // vytvoř metodu pro ged všechny tlacitka 
+      var buttons = this.ruleController.getButtons("BType", ""); 
+      this.setState({ order: 0, 
+        title: result[0].label.value, 
+        buttons: buttons,
+        queryRoots: result});
+   }.bind(this));
+   */
 
   }
 
-  handleClick = (selected) => {
-    
-     this.setState({buttons: ["AHOJ","blbe","srpe"]});
-    
-     //zkontroluj jestli má subtype jestli má subtype -> jestli vybere kind jdi zpátky na relation 
+  handleClick = (selectedType, selectedUri, createdClass) => {
 
-    
-     //processing
+     var ontoModel = this.state.ontoModel;
+     var lastIndex = ontoModel.length - 1;
+     var buttons;
+     var prevElement = "";
+     
+
+
+     this.ruleController.nextElement(selectedType,selectedUri,createdClass).then(function(results) {
+        console.log("call");
+        console.log(results);
+        this.setState({buttons: results.buttons, title: results.title});
+
+     }.bind(this));
+     
+     
+     if (Object.keys(ontoModel).length === 50) // jedná se o první záznam
+     {
+        buttons = 0;
+        lastIndex = 0;
+        // první v poli zkontroluj jestli strom není prázný!!!!!!!!!!!!!!!!
+        var curElement = this.state.queryTree[0];
+        //ontoModel.push({url: curElement.btype.value, label: curElement.label.value, from: prevElement, type: selected, puroType: "BType"});
+        //Ppriprav tlacitka 
+        buttons = this.ruleController.getButtons(ontoModel[lastIndex].puroType,ontoModel[lastIndex].type);
+        
+
+        // podívá se to spojitosti 
+        if (buttons === 1) {
+          var qElement = this.state.queryTree[lastIndex + 1];
+          // vymyslet důmyslnější cut
+          
+          buttons = this.ruleController.getButtons(qElement);
+          
+          
+          
+          
+          this.setState({title: "Which class represents" + qElement.label.value + " ("+qElement.type.value.split('#')[1]+")?",
+          });
+
+        }
+
+        //this.setState({title: this.state.queryTree[1].label.value, order: this.state.order ++, buttons:buttons});
+
+
+     }
+     else
+     {
+      
+
+      // vytvoř nový záz set state bla bla bla
+      // podívej se jestli current state nemá potomka (instance of/subtape of)
+      /*
+      prevElement = ontoModel[ontoModel.length - 1].type;
+
+      var results = this.ruleController.findRelatedBType(this.state.queryRoots[0].btype.value);
+      results.then(function(result) {
+        if (Object.keys(result).length > 0)
+        {  
+        var curElement = result[0];
+        // push až na kliknutí
+        ontoModel.push({url: curElement.btype.value, label: curElement.label.value, from: prevElement, type: selected, puroType: "BType"});
+        this.setState({title: curElement.label.value,
+          order: order,
+          ontoModel: ontoModel
+         });
+        }
+      }.bind(this))
+      */
+      // prevElement = ontoModel[ontoModel.length - 1].type;
+       //buttons = this.ruleController.getButtons(ontoModel[lastIndex].puroType,ontoModel[lastIndex].type);
+        buttons = 0;
+     } 
+     
+     
+     
+     
+     
+      
+     // jedná se o poslední objekt 
+     if (buttons === 4)
+     {
+      var order = this.state.order + 1; 
+      // this.ruleController.
+      //pridej do onto modelu
+       // tohle je blbost order dávam na query result 
+       var curElement = this.state.queryRoots[order];
+       
+     //  ontoModel.push({url: curElement.btype.value, label: curElement.label.value, from: prevElement, type: selected, puroType: "BType"});
+       this.setState({title: curElement.label.value,
+                      order: order,
+                      ontoModel: ontoModel
+                     });
+       //rekni si o všechna tlacitka
+
+
+     }
+     else
+     {
+
+     }
+     console.log(this.state.ontoModel);
+     
   }
 
 
@@ -126,14 +257,12 @@ class ModalWindow extends React.Component {
 
 class ModalButtons extends React.Component {
 
-
-
   render() {
     return (
     <div className="row text-center col-md-12 ">
       {this.props.buttons.map((value) => {
         return  <div className="col-md-4 text-center">
-                      <button type="button"  className="btn btn-success" onClick = {() => this.props.onClick(value)} >{value}</button>
+                      <button type="button"  className="btn btn-success" onClick = {() => this.props.onClick(value.name, value.uri, value.createdClass)} >{value.name}</button>
                 </div>
       })}
      </div>
