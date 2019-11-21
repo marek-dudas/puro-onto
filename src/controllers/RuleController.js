@@ -1,7 +1,11 @@
 import jsonData from './rules.json';
 import RdfController from './RdfController.js';
 import $ from 'jquery';
+import OntoModelController from './OntoModelController';
+import { get } from 'http';
+// HINT uri u prvních objektů není pole 
 
+// TODO -> neptat se opakovaně na již určené typy... dodělat connnect(kontrola typů) a ukončení -> well done; 
 
 
 export default class RuleController {
@@ -10,157 +14,71 @@ export default class RuleController {
     constructor() {
         this.rulesJson = JSON.parse(JSON.stringify(jsonData));      
         this.rdfController = new RdfController(); 
+        this.ontoController = new OntoModelController();  
         var queryTreePromise = this.rdfController.getFullPath();
         queryTreePromise.then(function(results) {
             this.queryTree = results;   
             console.log(results);        
         }.bind(this));
  
-        this.ontoModel = [];
+        var relationsPromise = this.rdfController.getRelations();
+        relationsPromise.then(function(results) {
+            this.relations = results;   
+            console.log(results);        
+        }.bind(this));
+ 
+       // this.ontoModel = [];
         this.index = 0;
         this.ruleIndex = 0;
         this.typeSelection = true;
         this.selectedEl = null;
         this.selectedType =null;
         this.lastSelectedType = null;
+        this.checkElements = [];
+
+        // Nový začátek 
+        this.relationOrderIndex = 0;
+        this.relation = null;
+        this.relationIndex = 0; 
+        this.relationType = null; 
+        
+        this.relationRuleIndex = 0; 
+
+        this.relationTree = {};
+        this.relationTreeIndex = 0; 
+
+        this.elementsWithoutType = [];
+        this.withoutTypeIndex = 0; 
+
+        this.elementConsistencyIndex = 0; 
+        this.elementConsitencyTree = [];
     }
     
-    // je třeba checkovat ontoModel 
-    ruleSelection =  (rule, element, uri) => 
-    {
-        
-        if ("connect" in rule[this.ruleIndex]) 
-        {
-            
-            //pokud type selection zeptej se na typ konkrétního elementu!
-            // může mít dva tatky projít cyklem 
-            //podívej se jestli už není určen
-            //check element father 
-            //fathers type 
-
-            var fatherOntoType = []; 
-            for(let father of element.father)
-            {      
-                for (let node of this.ontoModel)
-                {
-                    if (father === node.uri)
-                    {
-                       fatherOntoType.push(node.ontoType); 
-                    }
-                }
-            }
-     
-            
-            // tohle je blbě je zle -> ochcávka
-            if(rule[this.ruleIndex].connect.some(r=> fatherOntoType.includes(r)) && this.delUri(element.type.value)!=="BObject")
-            {
-               
-                return false; 
-            }
-            else
-            {
-                // najdi nebo nabídni typy
-                // podívej se jesltli už nebyli zvoleni (asi ne) -> dodělej později
-                // možná father type 
-                
-
-                if ((this.ruleIndex > 0 && "findRelation" in rule[this.ruleIndex - 1]) || uri )
-                {
-               
-                    let result = rule[this.ruleIndex].connect.map(function (ruleClass) {
-                        return {"name": ruleClass, "uri":null};
-                    });
-                    return Promise.resolve({"buttons": result, "title": rule[this.ruleIndex].question});
-                }
-                else
-                {
-            
-                    //cyklus!!!!!!!!!!!!!!!!!!! child > 1
-                    let i = this.ruleIndex;
-                    let result = [{"name": this.delUri(element.child.value), "uri":element.child.value}];  
-                    // ještě se to sem musí vrátit aby se určil typ; 
-                    this.ruleIndex --;
-                    return Promise.resolve({"buttons": result, "title": rule[i].question});
-                }
-
-
-
-            }
-        } 
-        // zkontroluj v případě dvojic
-        else if ("findRelation" in rule[this.ruleIndex])
-        {
-           
-            if (element.connect.length > 0 || element.connectFrom.length > 0) {
-                //podívej se pres relator na objekt ci subtype
-                //podivej se na okolní 
-                var endBTypes = [];
-                var connection = element.connect.concat(element.connectFrom);
-                for (let relation of connection)
-                {
-                   endBTypes.push(this.rdfController.getRelatorBtype(relation));
-                }
-                return Promise.all(endBTypes).then(function(results) {
-
-                   
-                    var buttons = [];    
-                    for (var el of results) {
-                
-                      if (el[0].father.value === null)
-                      {
-                        buttons.push({"name":el[0].elementLabel.value, "uri":el[0].element.value, "relName":el[0].relationName});
-                      }
-                      else
-                      {     
-                        buttons.push({"name":el[0].fatherLabel.value, "uri":el[0].father.value,"relName":el[0].relationName});
-                      }            
-                    }
-                    //podívej jestli už nemá určený typ.. pokud ano krok +2 
-                    return ({"buttons": buttons, "title":rule[this.ruleIndex].question});
-                }.bind(this));
-                
-            }
-            else{
-                return false; 
-            }
-        }
-        else if ("create" in rule[this.ruleIndex])
-        { 
-            
-            var returnVal = [{"name": "yes", "uri": null, "createdClass": rule[this.ruleIndex].create}, {"name": "no", "uri": null}]
-            return Promise.resolve({"buttons": returnVal, "title":rule[this.ruleIndex.question]}); 
-        }
-        else if ("relation" in rule[this.ruleIndex])
-        {
-
-        }
-        else if ("end" in rule[this.ruleIndex])
-        {
-        
-            return true; 
-           // return Promise.resolve({"buttons": result, "title": });
-        }
-
-
-
-    }
-
     getDefault = () =>
     {
-         var result;
-        
-         result = this.rulesJson.classes.map(function (ruleEl) {
-            return {"name": ruleEl, "uri":null};
-          });
-         return  {"buttons": result,"title": this.queryTree[this.index].label.value};   
+     
+        // tady se zeptej na type relationu 
+        // tohle není do defaultu ale do next element
+        // hod vyjmku v případě když nebude žádný relation k dispozici
+        let relation = this.relations[this.relationOrderIndex];
+        this.relation = relation;
+        let result = this.rulesJson.relationRules[0].offer.map(function (ruleClass) {
+            return {"name": ruleClass, "uri":relation.uri.value, "createdClass": this.delUri(relation.type.value),"origin":"from"};
+        }.bind(this));
+        return {"buttons": result, "title": this.rulesJson.relationRules[0].question.replace("VAL",relation.label.value)};
 
     }
 
-    commonRuleSelection = (element) => 
+
+
+    commonRuleSelection = (element, key) => 
     {
-        var result = [];
-        var fatherOnto = [];
-        var connection = 0;
+        let result = [];
+      
+        // tohle vyřeš na úrovni onto modelu!
+        let fatherOnto = [];
+        let childOnto = [];
+        let connection = 0;
         if (element.connect !== null)
         {
             connection = element.connect.length + element.connectFrom.length; 
@@ -169,193 +87,394 @@ export default class RuleController {
         var fatherPuro =  this.delUri(element.fatherType);
         var childPuro =   this.delUri(element.childType);
         
-        for (let node of this.ontoModel)
+        for (let node of this.ontoController.getOntoModel())
         {
             if (element.father.includes(node.uri)) {
                 fatherOnto.push(node.ontoType);
             }
+            
         }
         
         for (var rule of this.rulesJson.commonRules)
         {
             
-            if ((fatherOnto.includes(rule.fatherOnto) || (fatherOnto.length === 0 && rule.fatherOnto === "")) &&
+            /*if ((fatherOnto.includes(rule.fatherOnto) || (fatherOnto.length === 0 && rule.fatherOnto === "")) &&
                 (fatherPuro.includes(rule.fatherPuro) || (fatherPuro.length === 0 && rule.fatherPuro === "")) &&
                 childPuro.includes(rule.childPuro) || childPuro === rule.childPuro &&
                 rule.hasRelation <= connection
                 )
+            */
+            if(true)
             {
                 for(let val of rule.offer) 
                 { 
-                    result.push({"name":this.rulesJson.classes[val], "uri":null}); 
+                    //question atd...
+                    result.push({"name":this.rulesJson.classes[val],"createdClass": "elementSelection", "uri":element.uri.value, "origin": key}); 
                 }
                 return {"buttons": result, "title": element.label.value};
             }
         }
     }
 
-    // addToOntotype blbě je FROM !!!!
-    nextElement = async (selectedType, selectedUri, createdClass) =>
-    {  
-        var rule; 
-        var element;
-        //Uloží do meta modelu po zvolení parametru
-        
-      
-        if(this.rulesJson.classes.includes(selectedType) && !selectedUri)
-        {
-            if (this.index !== 0)
-            {
-                this.index++; 
-            }
-            this.selectedType = selectedType; 
-            this.addToOntoModel(selectedType); 
-            
-        }
-        
-        if (this.selectedEl === null && !selectedUri)
-        {
-            element = this.getNextElement();
-            this.selectedEl = element;
-        }
-        else if (selectedUri) 
-        {   
-            for (let node of this.queryTree)
-            {
-                if(node.uri.value === selectedUri)
-                {
-                    element = node;
-                    this.selectedEl = element;
-                    break;
-                }
-            }
 
+    ruleSelection = (rules, key, element, ontoType, rule) => 
+    {
+   
+        let commands; 
+        let additionalRules;
+        let offerTypes;
+        let uri;
+        let question;
+        let needElName;
+        if (rule)
+        {
+            offerTypes = rule; 
         }
         else
         {
-            element = this.selectedEl; 
+            commands = this.getSpecificRule(rules,key); 
+            additionalRules = this.getAdditionalRule(commands,ontoType);
+            offerTypes = (additionalRules.length > 0 ) ? offerTypes = additionalRules : offerTypes = commands.offer; 
         }
 
-  
-
-
-        rule = this.rulesJson[this.selectedType];  
-        
-
-        if(selectedType === "yes" || selectedType === "no")
+        //z Elementu udělej otázku
+        if (element !== false)
         {
-            if(selectedType === "yes")
+            if (this.isElementInstace(element))
             {
-                
-                this.addToOntoModel(createdClass, "new", rule);
-                selectedUri = null; 
+                needElName =true;
+                uri = false;
+                question = this.rulesJson.questions[1].question.replace("VAL",element.label.value);
             }
             else
             {
-                this.ruleIndex ++;
+                needElName = false;
+                uri = element.uri.value;
+                question = this.rulesJson.questions[0].question.replace("VAL",element.label.value);
             }
-
-        }
- 
-        if (this.ruleIndex === rule.length )
-        {
-            this.ruleIndex = 0;            
-        }
-
-        var ruleResult = this.ruleSelection(rule,element, selectedUri);
-        
-
-        while (ruleResult === false) {
-            this.ruleIndex ++;
-            ruleResult = this.ruleSelection(rule,element, selectedUri);             
-        }
-        
-        if(ruleResult === true)
-        {
-            if (this.index > 1)
-            {
-                this.selectedEl = this.getNextElement();
-                element = this.selectedEl; 
-            }
-            this.ruleIndex = 0;
-            return Promise.resolve(this.commonRuleSelection(element));
         }
         else
         {
-            return new Promise(resolve => {ruleResult.then(function(results) {
-                this.ruleIndex ++;
-                resolve(results);
-            }.bind(this));
-            });
+            uri = false; 
+            question = rules.questions[2].question;
+        }
+       
+
+        let result = offerTypes.map(function (ruleClass) {
+            return {"name": ruleClass, "uri": uri, "createdClass": "classSelection" ,"origin": key};
+        }.bind(this));
+        //get type object -> rozhodni jakou otázku
+        // PROČ EL. name???
+
+        return Promise.resolve({"buttons": result, "title": question, "elName": needElName}); 
+    }
+
+    // addToOntotype blbě je FROM !!!!
+    // kind, uri, dfssf, from/to
+    //createdClass: puroType
+    nextElement = async (selectedType, selectedUri, puroType, ruleKey,elName) =>
+    {  
+    
+        //první průchod na relataion 
+        
+        if (puroType === "BRelation")
+        {   
+           return this.relationWasSelected (selectedType, ruleKey);
+        }
+        else if (puroType === "classSelection" || puroType === "elementSelection") 
+        {
+           
+            // zápis do ontoModelu 
+            //no fatherjelikož je to konec větvě
+            if (this.getElementByUri(this.selectedEl.uri.value).father.length > 0)
+            {
+                //tohle je z ontoModelu!!
+                let ontoModel = this.ontoController.getOntoModel();
+                let passEl = (selectedUri === false) ? "http://lod2-dev.vse.cz/data/ontomodels#" + elName : this.selectedEl; 
+                this.ontoController.addRelation("Dodělat závislé na pravidlech", ontoModel[ontoModel.length -1].uri,passEl);
+            }
+            //změna z from na to Kvůli TOPIC
+            else if(this.relationRuleIndex === 2 && this.getAdditionalRule(this.getSpecificRule(this.rulesJson[this.relationType],ruleKey),selectedType).length === 0)
+            {
+                let ontoModel = this.ontoController.getOntoModel();
+                let lastRelElement;
+                //na tohle dávej pozor
+                let passEl = (selectedUri === false) ? "http://lod2-dev.vse.cz/data/ontomodels#" + elName : selectedUri;
+                for (let node of ontoModel)
+                {
+                
+                    if (node["fromRelation"] === this.relation.label.value)
+                    {
+                        lastRelElement = node;
+                        break;
+                    }
+                }
+                
+                this.ontoController.addRelation("Dodělat závislé na pravidlech", lastRelElement.uri,passEl);
+            }  
+            else if (puroType === "elementSelection")
+            {
+                let element = this.getElementByUri(selectedUri);
+
+                //father může být pole.. předělat!!!
+                let elementFather = this.ontoController.getOntoElement(element.father[0]);
+                this.ontoController.addRelation("Dodělat závislé na pravidlech", elementFather.uri , element.uri.value);
+            }
+          
+            this.ontoController.addToOntoModel(selectedUri, this.delUri(selectedUri),selectedType,
+            this.delUri(this.selectedEl.type.value),this.relation.label.value,ruleKey,undefined,undefined,elName);
+            //Zjištění přídavného pravidla
+            let additionalRule = this.getAdditionalRule(this.getSpecificRule(this.rulesJson[this.relationType],ruleKey),selectedType);
+            
+            if (additionalRule.length > 0)
+            {
+            
+                let prevEl = this.selectedEl; 
+                this.selectedEl = this.relationTree[this.relationIndex];
+                this.relationIndex --; 
+
+                return Promise.resolve(this.ruleSelection(undefined,ruleKey,this.selectedEl,undefined,additionalRule));
+            }
+            else
+            {
+                //change selection or step plus
+                //kontrolaElementů na konci
+                // proměná co určuje, že se jedná o kontrolu elementu  
+                //to pod tim dej před změnu z FROM na TO 
+                //elements without type jdeme dále 
+
+                if (this.elementsWithoutType.length === 0)
+                {
+                    this.elementsWithoutType = this.checkElementsInRelationTree(this.relationTree,this.ontoController.getOntoModel());
+                } 
+                // přiřazení typu neurčeným elementům 
+                if (this.elementsWithoutType.length > 0 && this.withoutTypeIndex < this.elementsWithoutType.length)
+                {
+                   
+                    let element = this.getElementByUri(this.elementsWithoutType[this.withoutTypeIndex].uri.value);
+                    this.withoutTypeIndex ++;
+                    return Promise.resolve(this.commonRuleSelection(element, ruleKey)); 
+                }
+                else
+                {
+                    
+                    //projdi všechny elementy a ověř úplnost typů !!!!!!!!!!!!
+                    //změnit strany případně nebo skočit na další relation!! jedeme dál..  
+                    // this.relator rule.Key pro check elementů
+                    let unfinishedTypes = this.checkElementsConsistency(this.relationTree, this.ontoController.getOntoModel(),this.elementConsitencyTree);
+                  
+                    if (unfinishedTypes.length > 0)
+                    {
+                        //volej a uvidíš
+                    
+                    }
+                    else
+                    {
+                        //projdi všechny již zvolené elemnty v onto modelu a zkontroluj úplnost typů
+                        //relationRuleIndex > 1 => další relation
+                        if (this.relationRuleIndex > 1)
+                        {
+                            //další relation!! ¨
+                            this.relationOrderIndex ++;
+                            
+                            this.relationRuleIndex = 0; 
+
+                            this.relationTree = {};
+                            this.relationTreeIndex = 0; 
+                    
+                            this.elementsWithoutType = [];
+                            this.withoutTypeIndex = 0; 
+                
+                            this.elementConsistencyIndex = 0; 
+                            this.elementConsitencyTree = [];
+
+                            return Promise.resolve(this.getDefault());
+
+                        }
+                        
+                        ruleKey = this.relationRuleIndex === 0 ? "from" : "to";
+                        let bTypes = this.getRelatedElements(this.relation,ruleKey);
+                        this.relationRuleIndex ++; 
+                        
+                        return new Promise(resolve => {bTypes.then(function(results) {
+
+                            results.unshift(this.getElementByUri(this.relation[ruleKey].value));
+                            
+                            let rule = this.rulesJson[this.relationType];
+                            this.relationTree = results; 
+                            this.relationIndex = this.relationTree.length - 1; 
+                            
+                            //Zkontroluj zda element useless a jaký typ!!! 
+                            this.selectedEl = this.relationTree[this.relationIndex];
+                            //počítá se dle délky pole +1!!
+                            this.relationIndex --;
+                            resolve(this.ruleSelection(rule,ruleKey,this.selectedEl));
+                        }.bind(this));});
+                    }
+                }
+
+            
+
+
+            }
+
         }
             
     }
 
-    addToOntoModel = (selected, elementUri, rule) => 
+    checkElementsConsistency = (ontoModel,relation,ruleKey) =>
     {
         
-        var element; 
-
-        if(elementUri)
+        if (this.elementConsitencyTree.length === 0)
         {
-        
-            if (elementUri === "new")
+            for (let node of ontoModel)
             {
-                //zapiš to onto Modelu a vypni 
-              
-                let from = rule[this.ruleIndex - 1].from ;
-                let to = rule[this.ruleIndex - 1].to ;
-
-                from = this.ontoModel[this.ontoModel.length + from].uri;
-                to  = this.ontoModel[this.ontoModel.length + to].uri;
-                this.ontoModel.push({uri: "", label: "NAME", from: from, to: to, ontoType: selected, puroType: null});
-
-                return true; 
-            }
-            else
-            {
-                for (let node of this.queryTree)
+                if (node.fromRelation === relation && node.direction === ruleKey)
                 {
-                    if(node.uri.value === elementUri)
-                    {
-                        element = node;
-                        break; 
-                    }
+                    this.elementConsitencyTree.push(node); 
                 }
             }
-           
-        }
-        else{
-            element = this.queryTree[this.index];
-        }
 
-        var label  = element.label.value; 
-        var puroType = element.type.value.split('#')[1];
-        var relation = "";
-        var father = []; 
-        var fromOnto = "";
-        var linkedTo = 0;
-        var question = "";
-        if ('relation' in element) {
-           relation = element.relation.value.split('#')[1];
-        }
-        // problém v případě dvou otců.. 
-       
-        if ('father' in element) {
-            father = element.father[0];
+            if (this.elementConsitencyTree.length === 0)
+            {
+               return this.elementConsitencyTree; 
+            }
         }
         
-        if ('connect' in element && element.connect !== [] && element.connect !== null) {
-            linkedTo = element.connect.length;
+        let elementTypes = this.elementConsistencyRules(this.elementConsitencyTree[this.elementConsistencyIndex],ontoModel);
+        while (this.elementConsitencyTree.length < this.elementConsistencyIndex && elementTypes.length === 0)
+        {
+            this.elementConsistencyIndex ++; 
+            elementTypes = this.elementConsistencyRules(this.elementConsitencyTree[this.elementConsistencyIndex],ontoModel);
         }
 
-        //bacha na index možná bude jinak
-        fromOnto = this.getFatherOntoType(element);
+        return elementTypes; 
+
+
+    }
+
+    elementConsistencyRules(element)
+    {
+            
+            // v případě undefinied vyhoď, že pravidlo není definováno 
+            let rules = this.rulesJson[element.ontoType]; 
+
+            
+            let check = []; 
+
+            //Tady by měla být pole jelikož to může být 1:N 
+            let subEl = this.ontoController.getElementsRelation(element.uri, "from").to;
+            let superEl = this.ontoController.getElementsRelation(element.uri, "to").from;
+            
+            let superElType = this.ontoController.getElementOntoType(superEl);
+            let subElType = this.ontoController.getElementOntoType(subEl);
+
+
+            for (let rule of rules)
+            {
+                if(rule.key === "supeType")
+                {
+                     if (!rule.type.includes(element.fatherType))
+                       {
+                           check.push({key: "superType", types: rule.type});
+                       }
+                }
+                else // subType
+                {
+                       if (!rule.type.includes(element.childType))
+                       {
+                           check.push({key: "subType", types: rule.type});
+                       }
+                }  
+            }
+            
+            return check;
+    }
+
+    relationWasSelected = (selectedType, ruleKey) => 
+    {
         
-        // ještě dopň vztahy
-        this.ontoModel.push({uri: element.uri.value, label: label, from: father, ontoType: selected, puroType: puroType});
-        console.log(this.ontoModel);
-        return true; 
+        this.relation = this.relations[this.relationOrderIndex];
+        this.relationType = selectedType; 
+        //selected type do object property
+        let rule = this.rulesJson[selectedType];
+        
+        this.relationTreeIndex = 0; 
+        let relationTree = this.getRelatedElements(this.relation,ruleKey);
+        
+        this.relationRuleIndex ++; 
+
+        this.ontoController.addToOntoModel(this.relation.uri.value, this.relation.label.value, selectedType, this.relation.type.value,
+            this.relation.uri.value, undefined, this.relation.from.value, this.relation.to.value);
+        
+        return new Promise(resolve => {relationTree.then(function(results) {
+
+
+            results.unshift(this.getElementByUri(this.relation[ruleKey].value)); 
+            this.relationTree = results; 
+            this.relationIndex = this.relationTree.length - 1; 
+            
+            this.selectedEl = this.relationTree[this.relationIndex];
+            this.relationIndex --;
+          
+            resolve(this.ruleSelection(rule,ruleKey,this.selectedEl));
+         }.bind(this));});
+    }
+
+    checkElementsInRelationTree = (tree, ontoModel) =>
+    {
+        // možná by nebylo od věci zkontrolovat úplnost zvolených typů!!!
+        let elementsWithoutType = [];
+        let withoutType = true; 
+        for (let element of tree)
+        {
+            withoutType = true;
+            for (let node of ontoModel)
+            {
+                if(element.uri.value === node.uri)
+                {
+                    withoutType = false;
+                }
+            }
+
+            if (withoutType === true && !this.isElementUseless(element) && ! this.isElementInstace(element))
+            {
+                elementsWithoutType.push(element); 
+            }
+        }
+        return elementsWithoutType; 
+    }
+
+    getAdditionalRule = (rule, selectedType) =>
+    {
+
+        if (selectedType in rule)
+        {
+            return rule[selectedType];
+        }
+        else
+        {
+            return [];
+        }
+    }
+
+    getSpecificRule = (rules, key) =>
+    {
+        console.log(rules)
+        for (let node of rules)
+        {
+            if (node.key === key)
+            {
+                return node; 
+            }
+        }
+
+        return false; 
+    }
+
+    getRelatedElements = (relation, key) =>
+    {
+        return this.rdfController.getRelationBTypes(relation[key].value);    
     }
 
     delUri = (uri) => 
@@ -388,13 +507,14 @@ export default class RuleController {
 
     getNextElement = () =>
     {
+        let ontoModel = this.ontoController.getOntoModel();
         if (this.isElementUseless(this.queryTree[this.index]))
         {
          this.index ++; 
         }
-        for (let index = 0; index < this.ontoModel.length; index ++) 
+        for (let index = 0; index < ontoModel.length; index ++) 
         {
-            if (this.ontoModel[index].uri === this.queryTree[this.index].uri.value)
+            if (ontoModel[index].uri === this.queryTree[this.index].uri.value && ontoModel[index].origin !== "selected")
             {
                
                 this.index ++;
@@ -405,13 +525,35 @@ export default class RuleController {
                 index = 0;  
             }
             
-        }
-
-       
+        }  
+        
+        this.ontoController.changeOrigin(this.queryTree[this.index].uri.value, "list");
+        
         return this.queryTree[this.index];
-
     }
 
+    isElementInstace = (element) =>
+    {
+        for (let node of this.queryTree)
+        {
+           
+            if (element.uri.value === node.uri.value  )
+            {
+                for (let type of node.fatherTypeRelation)
+                {
+                    if (this.delUri(type) === "instanceOf")
+                    {
+                        return true; 
+                    }
+                }
+            
+            }
+        }
+        return false; 
+        
+    } 
+
+    // element ve formátu queryTree!!
     isElementUseless = (element) =>
     {
         if ('child' in element) {
@@ -423,28 +565,33 @@ export default class RuleController {
         return false; 
     }
 
-    getFatherOntoType = (element) => 
+    getElementByUri = (uri) =>
     {
-
-        let result = []; 
-        if ('father' in element)
+        for (let node of this.queryTree)
         {
-            for (let node of this.ontoModel)
-            {
-                if(element.father.includes(node.uri))
-                {
-                    result.push(node.ontoType);
-                }
+            if (node.uri.value === uri) {
+                return node; 
             }
         }
-
-        if(result.length === 0)
+        return false; 
+    }
+     
+    getConnectedElements = (rule, elements) =>
+    {
+        let result = [];
+        for (let element of elements)
         {
-            result = [""];
+            let ontoType = this.ontoController.getElementOntoType(element);
+
+            if (ontoType === false || rule[this.ruleIndex].connect.includes(ontoType))
+            {
+                let name = (ontoType !== false) ? this.delUri(element)+ " ["+ontoType+"]" : this.delUri(element);
+                result.push({"name": name, "uri":element})
+            }
+            
         }
         return result;
     }
-        
 }
 
 

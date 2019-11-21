@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
+import './App.css';
 import $ from 'jquery';
 //import yuml_diagram from "yuml-diagram";
 import RuleController from './controllers/RuleController.js'; 
@@ -15,9 +16,7 @@ class InputField extends React.Component {
     this.state = {
       fieldValue: '', transformed: false, svg: null, title: "", fatherUrl: "", 
       buttons: [], order: 0, 
-      ontoModel: [], queryRoots: [], roots: []
-     
-    };
+      ontoModel: [], queryRoots: [], roots: [], changeName: false, elName: ""};
 
     this.ruleController = new RuleController();
     //this.RdfController = new RuleController(); 
@@ -25,8 +24,7 @@ class InputField extends React.Component {
   }
 
   handleChange = (event) => {
-    this.setState({ fieldValue: event.target.value });
-
+    this.setState({ elName: event.target.value });
   }
 
   handleSubmit = (event) => {
@@ -69,110 +67,22 @@ class InputField extends React.Component {
 
   }
 
-  handleClick = (selectedType, selectedUri, createdClass) => {
-
-     var ontoModel = this.state.ontoModel;
-     var lastIndex = ontoModel.length - 1;
-     var buttons;
-     var prevElement = "";
-     
-
-
-     this.ruleController.nextElement(selectedType,selectedUri,createdClass).then(function(results) {
-        console.log("call");
-        console.log(results);
-        this.setState({buttons: results.buttons, title: results.title});
-
-     }.bind(this));
-     
-     
-     if (Object.keys(ontoModel).length === 50) // jedná se o první záznam
+  handleClick = (selectedType, selectedUri, createdClass, origin) => {
+     let elName = this.state.elName;
+    
+     if (elName === "" && this.state.changeName === true)
      {
-        buttons = 0;
-        lastIndex = 0;
-        // první v poli zkontroluj jestli strom není prázný!!!!!!!!!!!!!!!!
-        var curElement = this.state.queryTree[0];
-        //ontoModel.push({url: curElement.btype.value, label: curElement.label.value, from: prevElement, type: selected, puroType: "BType"});
-        //Ppriprav tlacitka 
-        buttons = this.ruleController.getButtons(ontoModel[lastIndex].puroType,ontoModel[lastIndex].type);
-        
-
-        // podívá se to spojitosti 
-        if (buttons === 1) {
-          var qElement = this.state.queryTree[lastIndex + 1];
-          // vymyslet důmyslnější cut
-          
-          buttons = this.ruleController.getButtons(qElement);
-          
-          
-          
-          
-          this.setState({title: "Which class represents" + qElement.label.value + " ("+qElement.type.value.split('#')[1]+")?",
-          });
-
-        }
-
-        //this.setState({title: this.state.queryTree[1].label.value, order: this.state.order ++, buttons:buttons});
-
-
+       alert("Je nutné zadat název elementu!");
      }
      else
      {
-      
+        this.ruleController.nextElement(selectedType,selectedUri,createdClass, origin, elName).then(function(results) {
+          console.log("call");
+          console.log(results);
+          this.setState({buttons: results.buttons, title: results.title, elName: "", changeName: results.elName});
 
-      // vytvoř nový záz set state bla bla bla
-      // podívej se jestli current state nemá potomka (instance of/subtape of)
-      /*
-      prevElement = ontoModel[ontoModel.length - 1].type;
-
-      var results = this.ruleController.findRelatedBType(this.state.queryRoots[0].btype.value);
-      results.then(function(result) {
-        if (Object.keys(result).length > 0)
-        {  
-        var curElement = result[0];
-        // push až na kliknutí
-        ontoModel.push({url: curElement.btype.value, label: curElement.label.value, from: prevElement, type: selected, puroType: "BType"});
-        this.setState({title: curElement.label.value,
-          order: order,
-          ontoModel: ontoModel
-         });
-        }
-      }.bind(this))
-      */
-      // prevElement = ontoModel[ontoModel.length - 1].type;
-       //buttons = this.ruleController.getButtons(ontoModel[lastIndex].puroType,ontoModel[lastIndex].type);
-        buttons = 0;
-     } 
-     
-     
-     
-     
-     
-      
-     // jedná se o poslední objekt 
-     if (buttons === 4)
-     {
-      var order = this.state.order + 1; 
-      // this.ruleController.
-      //pridej do onto modelu
-       // tohle je blbost order dávam na query result 
-       var curElement = this.state.queryRoots[order];
-       
-     //  ontoModel.push({url: curElement.btype.value, label: curElement.label.value, from: prevElement, type: selected, puroType: "BType"});
-       this.setState({title: curElement.label.value,
-                      order: order,
-                      ontoModel: ontoModel
-                     });
-       //rekni si o všechna tlacitka
-
-
-     }
-     else
-     {
-
-     }
-     console.log(this.state.ontoModel);
-     
+      }.bind(this));
+    }
   }
 
 
@@ -196,7 +106,10 @@ class InputField extends React.Component {
     //this.setState({ transformed: true, svg: svg });
 
   }
-
+  handleClickName = (stateName) =>
+  {
+    this.setState({changeName : !stateName});
+  }
 
   render() {
     return (
@@ -204,21 +117,22 @@ class InputField extends React.Component {
         <div className="row">
           <form className="w-50" onSubmit={this.handleSubmit}>
             <div className="form-group">
-              <label htmlFor="comment">Comment:</label>
-              <textarea className="form-control" rows="10" id="comment" value={this.state.value} onChange={this.handleChange}> </textarea>
+              <label htmlFor="comment">Puro model</label>
+              <textarea className="form-control" rows="10" id="comment"  > </textarea>
             </div>
             <button type="Submint" className="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
-              Launch demo modal
-        </button>
+              Start transformation
+            </button>
           </form>
           <div className="form-group w-50" id="graph">
-            <label htmlFor="exampleFormControlTextarea1">Example textarea2</label>
+            <label htmlFor="exampleFormControlTextarea1">Onto model</label>
             <div className="form-control  h-100" id="exampleFormControlTextarea1">
                {this.state.transformed}
             </div>
+ 
           </div>
         </div>
-        <ModalWindow title={this.state.title} buttons={this.state.buttons} onClick = {this.handleClick} />
+        <ModalWindow title={this.state.title} onChange={this.handleChange} elName = {this.state.elName} buttons={this.state.buttons} onClick = {this.handleClick} onClickName = {this.handleClickName} changeName = {this.state.changeName} />
       </div>
 
 
@@ -238,14 +152,21 @@ class ModalWindow extends React.Component {
               <h5 className="modal-title" id="exampleModalLabel">{this.props.title}</h5>
             </div>
             <div className="modal-body">
-              <div className="container-fluid text-center">       
+            <div className =  {this.props.changeName ? 'input-group inputName' : 'd-none'}>
+                  <div className="input-group-prepend">
+                    <span className="input-group-text" id="">Name of the element:</span>
+                  </div>
+                  <input placeholder = "Write name of the new element!" type="text" className="form-control" onChange = {this.props.onChange}  value = {this.props.elName}></input>
+                </div> 
+              <div className="container-fluid text-center">  
+                        
                     <ModalButtons buttons={this.props.buttons} onClick = {this.props.onClick} />
               </div>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancel Transformation</button>
-              <button type="button" className="btn btn-primary">Undo</button>
-              <button type="button" className="btn btn-primary" data-dismiss = "modal">Next</button>
+              <button  type="button" className="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type = "button"  className =  {this.props.elName ? 'btn btn-primary' : 'd-none'} onClick={() => this.props.onClickName(this.props.changeName)}>Change name</button>
+              <button type = "button" className="btn btn-primary">Undo</button>
             </div>
           </div>
         </div>
@@ -262,7 +183,7 @@ class ModalButtons extends React.Component {
     <div className="row text-center col-md-12 ">
       {this.props.buttons.map((value) => {
         return  <div className="col-md-4 text-center">
-                      <button type="button"  className="btn btn-success" onClick = {() => this.props.onClick(value.name, value.uri, value.createdClass)} >{value.name}</button>
+                      <button type="button"  className="btn btn-success btnModal" onClick = {() => this.props.onClick(value.name, value.uri, value.createdClass, value.origin)} >{value.name}</button>
                 </div>
       })}
      </div>

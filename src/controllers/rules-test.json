@@ -1,0 +1,37 @@
+{  
+  "commonRules":[
+    {"fatherPuro": "BType", "fatherOnto": "Kind","childPuro": "BObject","hasRelation": 1, "offer": [1,2,3]},
+    {"fatherPuro": "", "fatherOnto": "","childPuro": "BType","hasRelation": 0, "offer": [0,1,2,3,4,5,6,7,10]}
+  ],
+  "classes":[
+  "Kind", "Subkind","Phase","Role", "Collective", "Quantity", "Relator","Category","RoleMixin","Mixin","Mode","Quality", "None"
+  ],
+  "questions":[
+      "What type is a VAL?",
+      "Which class is represented by a VAL?"
+  ],
+  "Role":[
+    {"connect": ["Kind","Subkind","Role"], "question": "Which element plays role to VAL?", "type": "father"},
+    {"findRelation": true, "question": "Which element is connect to VAL?"},
+    {"connect": ["Kind", "Subkind","Role","Phase"], "relation": true,"question": "What type is Val?", "type":"child"},
+    {"create": "Relator", "selected": ["Role", "Phase"], "relation":true, "from": -2, "to": -1,"question": "Do you want to create RELATOR between elements?"}
+    ],
+  "Mode":[
+    {"connect": ["Kind","Subkind"], "question": "Which element is connected to VAL?" },
+    {"findRelation": true, "question": "Which element is connected to VAL?"},
+    {"connect": ["Kind","Subkind"], "question": "3"}
+  ],
+  "Phase":[
+    {"connect": ["kind","subkind"], "question": "Which element is connected to sdsdsdsddsds VAL?" },
+    {"findRelation": true, "question": "23"},
+    {"connect": ["kind","subkind"], "question": "2"}
+  ],
+  "Kind":[
+    {"end": true}
+  ],
+  "Subkind":[
+    {"end": true}
+  ]
+  }
+
+  

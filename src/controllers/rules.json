@@ -1,32 +1,60 @@
 {  
-  "commonRules":[
-    {"fatherPuro": "BType", "fatherOnto": "Kind","childPuro": "BObject","hasRelation": 1, "offer": [1,2,3]},
-    {"fatherPuro": "", "fatherOnto": "","childPuro": "BType","hasRelation": 0, "offer": [1]}
+  
+  "relationRules": [
+    {"offer": ["Relator","Characterization"], "question":"Which type is relation VAL?"}
   ],
+  
+  "Relator":[
+    {"key": "from", "offer": ["Kind", "Role"], "Kind": ["Role"]},
+    {"key" : "to","offer": ["Kind", "Role"]}
+  ],
+
+  "Characterization":[
+    {"key": "from", "offer": ["Kind", "Subkind"]},
+    {"key" : "to","offer": ["Mode"]}
+  ],
+  
+
+  
   "classes":[
   "Kind", "Subkind","Phase","Role", "Collective", "Quantity", "Relator","Category","RoleMixin","Mixin","Mode","Quality", "None"
   ],
+
+  "commonRules":[
+    {"fatherPuro": "BType", "childPuro": "instance", "fatherOnto": "Kind", "hasRelation": 1, "offer": [1]},
+    {"fatherPuro": "", "fatherOnto": "","childPuro": "BType","hasRelation": 0, "offer": [0,1,2,3,4,5,6,7,10]},
+    {"fatherPuro": "", "fatherOnto": "","childPuro": "BType","hasRelation": 0, "offer": [0,1,2,3,4,5,6,7,10]}
+
+  ],
+
+
   "questions":[
-      "What type is VAL?",
-      "Which classes is represented by VAL?"
+    {"type": "BType", "question": "Which type is a VAL?"},
+    {"type": "instance", "question": "Which type represents instance VAL?"},
+    {"type": "none", "question": "Which element plays TYPE to REL?"}
   ],
-  "Role":[
-    {"connect": ["Role","Subkind","Kind"], "question": "1" },
-    {"findRelation": true, "question": "2"},
-    {"connect": ["Subkind", "Role", "Phase"], "relation": true,"question": "3"},
-    {"create": "Relator", "selected": ["Role", "Phase"], "question": "4", "relation":true, "from": -2, "to": -1}
+  "Mode":[
+    {"key": "superType", "type": ["Kind","Role"]},
+    {"key": "subType", "type": ["Subkind, Kind"]}
     ],
-  "mode":[
-    {"connect": ["kind","subkind"], "question": "Which element is connected to VAL?" },
-    {"findRelation": true, "question": "2"},
-    {"connect": ["kind","subkind"], "question": "2"}
+  "Role":[
+    {"key": "superType", "type": ["Kind","Role"]},
+    {"key": "subType", "type": ["Kind", "Role", "Empty"]}
+    ],
+  "Mode":[
+    {"connect": ["Kind","Subkind"], "question": "Which element is connected to VAL?" },
+    {"findRelation": true, "question": "Which element is connected to VAL?"},
+    {"connect": ["Kind","Subkind"], "question": "3"}
   ],
-  "phase":[
+  "Phase":[
     {"connect": ["kind","subkind"], "question": "Which element is connected to sdsdsdsddsds VAL?" },
-    {"findRelation": true, "question": "2"},
+    {"findRelation": true, "question": "23"},
     {"connect": ["kind","subkind"], "question": "2"}
   ],
   "Kind":[
+    {"end": true}
+  ],
+  "Subkind":[
     {"end": true}
   ]
   }

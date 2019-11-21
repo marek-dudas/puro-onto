@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="ASCII"?>
+<RefOntoUML:Model xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:RefOntoUML="http://nemo.inf.ufes.br/ontouml/refontouml" xmi:id="_T9pR0QbVEeqxu5et0g2GfA" name="Model">
+  <packagedElement xsi:type="RefOntoUML:PerceivableQuality" xmi:id="_VfA98AbVEeqxu5et0g2GfA" name="PerceivableQuality1" visibility="public"/>
+  <packagedElement xsi:type="RefOntoUML:Kind" xmi:id="_wpbukAbaEeqxu5et0g2GfA" name="City" visibility="public"/>
+  <packagedElement xsi:type="RefOntoUML:Role" xmi:id="_xS3GEAbaEeqxu5et0g2GfA" name="Publishing location" visibility="public">
+    <generalization xmi:id="_c-HlEAbbEeqxu5et0g2GfA" general="_wpbukAbaEeqxu5et0g2GfA"/>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:Role" xmi:id="_0lU8YAbaEeqxu5et0g2GfA" name="Publishing" visibility="public"/>
+  <packagedElement xsi:type="RefOntoUML:DataType" xmi:id="_2ljHsAbaEeqxu5et0g2GfA" name="Date of publishing" visibility="public"/>
+  <packagedElement xsi:type="RefOntoUML:Role" xmi:id="_5AKwAAbaEeqxu5et0g2GfA" name="Published book" visibility="public">
+    <generalization xmi:id="_XjrVoAbbEeqxu5et0g2GfA" general="_6lquMAbaEeqxu5et0g2GfA"/>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:Kind" xmi:id="_6lquMAbaEeqxu5et0g2GfA" name="Book" visibility="public"/>
+  <packagedElement xsi:type="RefOntoUML:Mode" xmi:id="_73FSwAbaEeqxu5et0g2GfA" name="Book Topic" visibility="public"/>
+  <packagedElement xsi:type="RefOntoUML:SubKind" xmi:id="_-o0akAbaEeqxu5et0g2GfA" name="DDC topic" visibility="public">
+    <generalization xmi:id="_VkXJQAbbEeqxu5et0g2GfA" general="_73FSwAbaEeqxu5et0g2GfA"/>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:Association" xmi:id="_KeSMsAbbEeqxu5et0g2GfA" name="Association3" visibility="public" memberEnd="_KeSMsQbbEeqxu5et0g2GfA _KeSMtAbbEeqxu5et0g2GfA">
+    <ownedEnd xmi:id="_KeSMsQbbEeqxu5et0g2GfA" name="book topic" type="_73FSwAbaEeqxu5et0g2GfA" association="_KeSMsAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_KeSMsgbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_KeSMswbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_KeSMtAbbEeqxu5et0g2GfA" name="book topic" type="_73FSwAbaEeqxu5et0g2GfA" association="_KeSMsAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_KeSMtQbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_KeSMtgbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:Characterization" xmi:id="_PNP2MAbbEeqxu5et0g2GfA" name="Characterization1" visibility="public" memberEnd="_PNP2MQbbEeqxu5et0g2GfA _PNP2NAbbEeqxu5et0g2GfA" navigableOwnedEnd="_PNP2MQbbEeqxu5et0g2GfA _PNP2NAbbEeqxu5et0g2GfA">
+    <ownedEnd xmi:id="_PNP2MQbbEeqxu5et0g2GfA" name="book topic" type="_73FSwAbaEeqxu5et0g2GfA" association="_PNP2MAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_PNP2MgbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_PNP2MwbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_PNP2NAbbEeqxu5et0g2GfA" name="book topic" type="_73FSwAbaEeqxu5et0g2GfA" isReadOnly="true" association="_PNP2MAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_PNP2NQbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_PNP2NgbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:Characterization" xmi:id="_Q_EZIAbbEeqxu5et0g2GfA" name="Characterization2" visibility="public" memberEnd="_Q_FAMAbbEeqxu5et0g2GfA _Q_FAMwbbEeqxu5et0g2GfA" navigableOwnedEnd="_Q_FAMAbbEeqxu5et0g2GfA _Q_FAMwbbEeqxu5et0g2GfA">
+    <ownedEnd xmi:id="_Q_FAMAbbEeqxu5et0g2GfA" name="book topic" type="_73FSwAbaEeqxu5et0g2GfA" association="_Q_EZIAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_Q_FAMQbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_Q_FAMgbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_Q_FAMwbbEeqxu5et0g2GfA" name="book topic" type="_73FSwAbaEeqxu5et0g2GfA" isReadOnly="true" association="_Q_EZIAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_Q_FANAbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_Q_FANQbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:Characterization" xmi:id="_StnloAbbEeqxu5et0g2GfA" name="Characterization3" visibility="public" memberEnd="_StoMsAbbEeqxu5et0g2GfA _StoMswbbEeqxu5et0g2GfA" navigableOwnedEnd="_StoMsAbbEeqxu5et0g2GfA _StoMswbbEeqxu5et0g2GfA">
+    <ownedEnd xmi:id="_StoMsAbbEeqxu5et0g2GfA" name="book topic" type="_73FSwAbaEeqxu5et0g2GfA" association="_StnloAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_StoMsQbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_StoMsgbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_StoMswbbEeqxu5et0g2GfA" name="book" type="_6lquMAbaEeqxu5et0g2GfA" isReadOnly="true" association="_StnloAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_StoMtAbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_StoMtQbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:Association" xmi:id="_TwJZoAbbEeqxu5et0g2GfA" name="Association4" visibility="public" memberEnd="_TwJZoQbbEeqxu5et0g2GfA _TwJZpAbbEeqxu5et0g2GfA">
+    <ownedEnd xmi:id="_TwJZoQbbEeqxu5et0g2GfA" name="ddc topic" type="_-o0akAbaEeqxu5et0g2GfA" association="_TwJZoAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_TwJZogbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_TwJZowbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_TwJZpAbbEeqxu5et0g2GfA" name="book topic" type="_73FSwAbaEeqxu5et0g2GfA" association="_TwJZoAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_TwJZpQbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_TwJZpgbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:Mediation" xmi:id="_YRh6IAbbEeqxu5et0g2GfA" name="Mediation1" visibility="public" memberEnd="_YRh6IQbbEeqxu5et0g2GfA _YRh6JAbbEeqxu5et0g2GfA" navigableOwnedEnd="_YRh6IQbbEeqxu5et0g2GfA _YRh6JAbbEeqxu5et0g2GfA">
+    <ownedEnd xmi:id="_YRh6IQbbEeqxu5et0g2GfA" name="published book" type="_5AKwAAbaEeqxu5et0g2GfA" association="_YRh6IAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_YRh6IgbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_YRh6IwbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_YRh6JAbbEeqxu5et0g2GfA" name="publishing" type="_0lU8YAbaEeqxu5et0g2GfA" isReadOnly="true" association="_YRh6IAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_YRh6JQbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_YRh6JgbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:Mediation" xmi:id="_YwNaMAbbEeqxu5et0g2GfA" name="Mediation2" visibility="public" memberEnd="_YwNaMQbbEeqxu5et0g2GfA _YwNaNAbbEeqxu5et0g2GfA" navigableOwnedEnd="_YwNaMQbbEeqxu5et0g2GfA _YwNaNAbbEeqxu5et0g2GfA">
+    <ownedEnd xmi:id="_YwNaMQbbEeqxu5et0g2GfA" name="publishing" type="_0lU8YAbaEeqxu5et0g2GfA" association="_YwNaMAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_YwNaMgbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_YwNaMwbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_YwNaNAbbEeqxu5et0g2GfA" name="publishing location" type="_xS3GEAbaEeqxu5et0g2GfA" isReadOnly="true" association="_YwNaMAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_YwNaNQbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_YwNaNgbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:MaterialAssociation" xmi:id="_aDg1IAbbEeqxu5et0g2GfA" name="Material1" visibility="public" memberEnd="_aDg1IQbbEeqxu5et0g2GfA _aDg1JAbbEeqxu5et0g2GfA" isDerived="true" navigableOwnedEnd="_aDg1IQbbEeqxu5et0g2GfA _aDg1JAbbEeqxu5et0g2GfA">
+    <ownedEnd xmi:id="_aDg1IQbbEeqxu5et0g2GfA" name="date of publishing" type="_2ljHsAbaEeqxu5et0g2GfA" association="_aDg1IAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_aDg1IgbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_aDg1IwbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_aDg1JAbbEeqxu5et0g2GfA" name="publishing" type="_0lU8YAbaEeqxu5et0g2GfA" association="_aDg1IAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_aDg1JQbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_aDg1JgbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:Structuration" xmi:id="_bPpREAbbEeqxu5et0g2GfA" name="Structuration1" visibility="public" memberEnd="_bPp4IAbbEeqxu5et0g2GfA _bPp4IwbbEeqxu5et0g2GfA" navigableOwnedEnd="_bPp4IAbbEeqxu5et0g2GfA _bPp4IwbbEeqxu5et0g2GfA">
+    <ownedEnd xmi:id="_bPp4IAbbEeqxu5et0g2GfA" name="date of publishing" type="_2ljHsAbaEeqxu5et0g2GfA" association="_bPpREAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_bPp4IQbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_bPp4IgbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_bPp4IwbbEeqxu5et0g2GfA" name="publishing" type="_0lU8YAbaEeqxu5et0g2GfA" association="_bPpREAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_bPp4JAbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_bPp4JQbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xsi:type="RefOntoUML:Association" xmi:id="_cDS7kAbbEeqxu5et0g2GfA" name="Association5" visibility="public" memberEnd="_cDTioAbbEeqxu5et0g2GfA _cDTiowbbEeqxu5et0g2GfA">
+    <ownedEnd xmi:id="_cDTioAbbEeqxu5et0g2GfA" name="date of publishing" type="_2ljHsAbaEeqxu5et0g2GfA" association="_cDS7kAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_cDTioQbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_cDTiogbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_cDTiowbbEeqxu5et0g2GfA" name="publishing" type="_0lU8YAbaEeqxu5et0g2GfA" association="_cDS7kAbbEeqxu5et0g2GfA">
+      <upperValue xsi:type="RefOntoUML:LiteralUnlimitedNatural" xmi:id="_cDTipAbbEeqxu5et0g2GfA" value="1"/>
+      <lowerValue xsi:type="RefOntoUML:LiteralInteger" xmi:id="_cDTipQbbEeqxu5et0g2GfA" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+</RefOntoUML:Model>
