@@ -1,15 +1,16 @@
 import jsonData from './rules.json';
 import RdfController from './RdfController.js';
+import $ from 'jquery';
 import OntoModelController from './OntoModelController';
-// TODO -> v případě dvou otců projdi cyklem a zkontroluj oba!!!!
-// TODO -> vyřešit vazby
-// TODO -> next element do objektového schématu -> zatím prototyp 
-// TODO -> třída element pro sjednocení properties 
+// HINT uri u prvních objektů není pole 
+
+// TODO -> neptat se opakovaně na již určené typy... dodělat connnect(kontrola typů) a ukončení -> well done; 
 
 
 export default class RuleController {
+
+
     constructor() {
-        
         this.rulesJson = JSON.parse(JSON.stringify(jsonData));      
         this.rdfController = new RdfController(); 
         this.ontoController = new OntoModelController();  
@@ -24,11 +25,17 @@ export default class RuleController {
             this.relations = results;   
             console.log(results);        
         }.bind(this));
-
-
+ 
+       // this.ontoModel = [];
+        this.index = 0;
+        this.ruleIndex = 0;
+        this.typeSelection = true;
         this.selectedEl = null;
-        // Nový začátek 
+        this.selectedType =null;
+        this.lastSelectedType = null;
+        this.checkElements = [];
 
+        // Nový začátek 
         this.relationOrderIndex = 0;
         this.relation = null;
         this.relationIndex = 0; 
@@ -87,7 +94,6 @@ export default class RuleController {
             
         }
         
-        // Změnit!! 
         for (var rule of this.rulesJson.commonRules)
         {
             
@@ -119,7 +125,6 @@ export default class RuleController {
         let uri;
         let question;
         let needElName;
-        
         if (rule)
         {
             offerTypes = rule; 
@@ -131,7 +136,7 @@ export default class RuleController {
             offerTypes = (additionalRules.length > 0 ) ? offerTypes = additionalRules : offerTypes = commands.offer; 
         }
 
-        //z elementu udělat otázku
+        //z Elementu udělej otázku
         if (element !== false)
         {
             if (this.isElementInstace(element))
@@ -157,50 +162,43 @@ export default class RuleController {
         let result = offerTypes.map(function (ruleClass) {
             return {"name": ruleClass, "uri": uri, "createdClass": "classSelection" ,"origin": key};
         }.bind(this));
+        //get type object -> rozhodni jakou otázku
+        // PROČ EL. name???
 
         return Promise.resolve({"buttons": result, "title": question, "elName": needElName}); 
     }
 
-    // předělat do objektů a metod-> sjednotit kód 
+    // addToOntotype blbě je FROM !!!!
+    // kind, uri, dfssf, from/to
+    //createdClass: puroType
     nextElement = async (selectedType, selectedUri, puroType, ruleKey,elName) =>
     {  
     
         //první průchod na relataion 
         if (puroType === "BRelation")
         {   
-       
            return this.relationWasSelected (selectedType, ruleKey);
         }
-        else //(puroType === "classSelection" || puroType === "elementSelection") 
+        else if (puroType === "classSelection" || puroType === "elementSelection") 
         {
-                  
+           
+            // zápis do ontoModelu 
+            //no fatherjelikož je to konec větvě
+       
             if (elName !== "")
             {
                 let el = this.getElementByUri(selectedUri);
-                let father;
-                let passEl;
-                if (puroType === "superType")
-                {
-                    father = "http://lod2-dev.vse.cz/data/ontomodels#" + elName;
-                    passEl = el.uri.value; 
-                }
-                else if (puroType === "subType")
-                {
-                    passEl = "http://lod2-dev.vse.cz/data/ontomodels#" + elName;    
-                    father = el.uri.value;
-                }
-                else
-                {
-                    father = el.father[0];
-                    passEl = "http://lod2-dev.vse.cz/data/ontomodels#" + elName; 
-                }
+                let father = el.father[0];
+                let passEl = "http://lod2-dev.vse.cz/data/ontomodels#" + elName; 
                 this.ontoController.addRelation("Dodělat závislé na pravidlech", father ,passEl);
             }
-            //změna z from na kvůli TOPIC
+            //změna z from na to Kvůli TOPIC
             else if(this.relationRuleIndex === 2 && this.getAdditionalRule(this.getSpecificRule(this.rulesJson[this.relationType],ruleKey),selectedType).length === 0)
             {
+                
                 let ontoModel = this.ontoController.getOntoModel();
                 let lastRelElement;
+                //na tohle dávej pozor
                 let passEl = (selectedUri === false) ? "http://lod2-dev.vse.cz/data/ontomodels#" + elName : selectedUri;
                 for (let index = ontoModel.length - 1; index >= 0; index --)
                 {
@@ -221,7 +219,6 @@ export default class RuleController {
                 }
                 
             }  
-            //
             else if (puroType === "elementSelection")
             {   
                 let element = this.getElementByUri(selectedUri);
@@ -229,9 +226,11 @@ export default class RuleController {
                 let elementFather = this.ontoController.getOntoElement(element.father[0]);
                 this.ontoController.addRelation("Dodělat závislé na pravidlech", elementFather.uri , element.uri.value);
             }
-           
+          
             this.ontoController.addToOntoModel(selectedUri, this.delUri(selectedUri),selectedType,
             this.delUri(this.selectedEl.type.value),this.relation.uri.value,ruleKey,undefined,undefined,elName);
+        
+
             let additionalRule = this.getAdditionalRule(this.getSpecificRule(this.rulesJson[this.relationType],ruleKey),selectedType);
             
             if (additionalRule.length > 0)
@@ -239,8 +238,8 @@ export default class RuleController {
             
                 let prevEl = this.selectedEl; 
                 this.selectedEl = this.getNextElement;
-                
-                console.log(additionalRule);
+
+
                 return Promise.resolve(this.ruleSelection(undefined,ruleKey,this.selectedEl,undefined,additionalRule));
             }
             else
@@ -248,6 +247,8 @@ export default class RuleController {
                 //change selection or step plus
                 //kontrolaElementů na konci
                 // proměná co určuje, že se jedná o kontrolu elementu  
+                //to pod tim dej před změnu z FROM na TO 
+                //elements without type jdeme dále 
 
                 if (this.elementsWithoutType.length === 0)
                 {
@@ -271,27 +272,22 @@ export default class RuleController {
                   
                     if (unfinishedTypes.length > 0)
                     {
-                
-                        // upravit na funkci
-                        let question = "What is " + unfinishedTypes[0].key + " of " + this.delUri(unfinishedTypes[0].element);
-                        let mappedButtons = unfinishedTypes[0].types.map(function (ruleClass) {
-                            return {"name": ruleClass, "uri": unfinishedTypes[0].element, "createdClass":  unfinishedTypes[0].key,"origin": ruleKey};
-                        }.bind(this));
-
-                        return Promise.resolve({"buttons": mappedButtons, "title": question, "elName": true}); 
-                               
+                        //volej a uvidíš
+                        alert("endHere")
+                        console.log(unfinishedTypes);
                     }
                     else
                     {
                      
-                        //projdi všechny již zvolené elementy v onto modelu a zkontroluj úplnost typů
+                        //projdi všechny již zvolené elemnty v onto modelu a zkontroluj úplnost typů
                         //relationRuleIndex > 1 => další relation
+                        //pozor!
                         let lastElUri = this.ontoController.getLastElementUri(this.relation.uri.value);
                         this.ontoController.updateOntoModel(this.relation.uri.value, ruleKey, lastElUri);
                         
                         if (this.relationRuleIndex > 1)
                         {
-                            //další relation!! 
+                            //další relation!! ¨
                             this.relationOrderIndex ++;
                             
                             this.relationRuleIndex = 0; 
@@ -305,16 +301,7 @@ export default class RuleController {
                             this.elementConsistencyIndex = 0; 
                             this.elementConsitencyTree = [];
 
-                            if (this.relationOrderIndex === this.relations.length)
-                            {
-                                alert("Transformation is comlete!!!");
-                                return Promise.resolve({buttons: [], title: "The End"});
-                            }
-                            else
-                            {
-                                return Promise.resolve(this.getDefault());
-                            }
-                            
+                            return Promise.resolve(this.getDefault());
 
                         }
                         
@@ -389,56 +376,14 @@ export default class RuleController {
             let rules = this.rulesJson[element.ontoType]; 
            
             let check = []; 
-            let checkRelation = false;
-            let ontoRel = this.ontoController.getOntoElement(this.relation.uri.value);
 
             //Tady by měla být pole jelikož to může být 1:N 
-            // !!! Převod na metodu a úprava dle pravidel
-
+            let subEl = this.ontoController.getElementsRelation(element.uri, "from").to;
+            let superEl = this.ontoController.getElementsRelation(element.uri, "to").from;
             
-            let subEl = this.ontoController.getElementsRelation(element.uri, "from");
-            if (subEl.ontoType === "Relator")
-            {
-                subEl = subEl.uri;
-            }
-            else
-            {
-                if (subEl === false && ontoRel.to === "")
-                {
-                    subEl = this.relation.uri.value;
-                
-                }
-                else
-                {
-                    subEl = subEl.to;
-                }
-            }
-            
-
-            let superEl = this.ontoController.getElementsRelation(element.uri, "to");
-            if (superEl.ontoType === "Relator")
-            {
-                superEl = superEl.uri;
-            }
-            else
-            {
-                
-                if (superEl === false && ontoRel.from === "")
-                {
-                     
-                    superEl = this.relation.uri.value;
-                
-                }
-                else
-                {
-                    superEl = superEl.from;
-                }
-            }
-
             let superElType = this.ontoController.getElementOntoType(superEl);
             let subElType = this.ontoController.getElementOntoType(subEl);
-            console.log(superElType)
-            console.log(subElType)
+
             for (let rule of rules)
             {
                 if(rule.key === "superType")
@@ -446,14 +391,14 @@ export default class RuleController {
                      if (!rule.type.includes(superElType) && rule.type.length > 0)
                        {
                            
-                           check.push({key: "superType", types: rule.type, element:element.uri});
+                           check.push({key: "superType", types: rule.type, element:element.label});
                        }
                 }
                 else // subType
                 {
                        if (!rule.type.includes(subElType) && rule.type.length > 0)
                        {
-                           check.push({key: "subType", types: rule.type, element: element.uri});
+                           check.push({key: "subType", types: rule.type, element: element.label});
                        }
                 }  
             }
@@ -475,11 +420,10 @@ export default class RuleController {
         
         this.relationRuleIndex ++; 
 
-        //this.ontoController.addToOntoModel(this.relation.uri.value, this.relation.label.value, selectedType, this.relation.type.value,
-        //    this.relation.uri.value, undefined, this.relation.from.value, this.relation.to.value);
+        this.ontoController.addToOntoModel(this.relation.uri.value, this.relation.label.value, selectedType, this.relation.type.value,
+            this.relation.uri.value, undefined, this.relation.from.value, this.relation.to.value);
 
-        this.ontoController.addRelation(selectedType, "" , "", this.relation.uri.value, this.relation.label.value);
-
+            
 
         
         
@@ -491,27 +435,8 @@ export default class RuleController {
             this.relationIndex = this.relationTree.length - 1; 
             
             this.selectedEl = this.getNextElement();
-            
-            //rychlá záplata -> předělat
-            let el = this.getElementByUri(this.selectedEl.uri.value)
-            let additionalRule = [];
-            if (el.father.length > 0)
-            {
-                let fatherType = this.ontoController.getElementOntoType(el.father[0]); 
-                if (fatherType !== false)
-                {
-                   additionalRule = this.getAdditionalRule(this.getSpecificRule(rule,ruleKey),fatherType);
-                }
-            }
-            if (additionalRule.length === 0)
-            {
-                resolve(this.ruleSelection(rule,ruleKey,this.selectedEl));
-            }
-            else
-            {
-              resolve(this.ruleSelection(undefined,ruleKey,this.selectedEl,undefined,additionalRule));
-            }
-            
+
+            resolve(this.ruleSelection(rule,ruleKey,this.selectedEl));
          }.bind(this));});
     }
 
@@ -554,6 +479,7 @@ export default class RuleController {
 
     getSpecificRule = (rules, key) =>
     {
+        console.log(rules)
         for (let node of rules)
         {
             if (node.key === key)

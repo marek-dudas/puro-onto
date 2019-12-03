@@ -3,13 +3,13 @@ import ReactDOM from "react-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import './App.css';
-import $ from 'jquery';
+//import $ from 'jquery';
 //import yuml_diagram from "yuml-diagram";
 import RuleController from './controllers/RuleController.js'; 
-import RdfController from './controllers/RdfController.js';
-import { thisTypeAnnotation } from "@babel/types";
+//import RdfController from './controllers/RdfController.js';
+//import { thisTypeAnnotation } from "@babel/types";
 
-
+//přiřadit key k talčítkům -> zamyslet se nad využitím 
 class InputField extends React.Component {
   constructor(props) {
     super(props);
@@ -152,12 +152,17 @@ class ModalWindow extends React.Component {
               <h5 className="modal-title" id="exampleModalLabel">{this.props.title}</h5>
             </div>
             <div className="modal-body">
-            <div className =  {this.props.changeName ? 'input-group inputName' : 'd-none'}>
-                  <div className="input-group-prepend">
-                    <span className="input-group-text" id="">Name of the element:</span>
-                  </div>
-                  <input placeholder = "Write name of the new element!" type="text" className="form-control" onChange = {this.props.onChange}  value = {this.props.elName}></input>
-                </div> 
+              <div className =  {this.props.changeName ? '' : 'd-none'}>
+                <div className = "input-group inputName">
+                      <div className="input-group-prepend">
+                        <span className="input-group-text" id="">Name of the element:</span>
+                      </div>
+                      <input placeholder = "Write name of the new element!" type="text" className="form-control" onChange = {this.props.onChange}  value = {this.props.elName}></input>
+                  
+                  </div> 
+                <h5 className = "text-center inputName">Select element's class:</h5>
+                
+              </div>
               <div className="container-fluid text-center">  
                         
                     <ModalButtons buttons={this.props.buttons} onClick = {this.props.onClick} />
@@ -165,7 +170,7 @@ class ModalWindow extends React.Component {
             </div>
             <div className="modal-footer">
               <button  type="button" className="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button type = "button"  className =  {this.props.elName ? 'btn btn-primary' : 'd-none'} onClick={() => this.props.onClickName(this.props.changeName)}>Change name</button>
+    {/* <button type = "button"  className =  {this.props.elName ? 'btn btn-primary' : 'd-none'} onClick={() => this.props.onClickName(this.props.changeName)}>Change name</button> */}
               <button type = "button" className="btn btn-primary">Undo</button>
             </div>
           </div>

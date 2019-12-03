@@ -5,16 +5,17 @@ export default class RuleController {
     {
         this.ontoModel  = []; 
     } 
-    // selected co se zvolilo, elemnt 
+  
+    
     addToOntoModel = (uri, label, ontoType, puroType, relationName, direction,from, to, elName) => 
     {
     
-        //zamyslet se nad uri a je to 
+       
         let elPuroType;
         let elLabel;
         let elUri; 
-
-        if (uri === false)
+        
+        if (elName !==  "" && elName !== undefined)
         {
             elPuroType = false;
             elLabel = elName;
@@ -32,14 +33,24 @@ export default class RuleController {
         return true; 
     }
 
-    addRelation = (type, from, to) => 
+    addRelation = (type, from, to, uri, label) => 
     {
-        this.ontoModel.push({type: "relation", ontoType: type, from:from, to:to});
+        this.ontoModel.push({type: "relation", ontoType: type, from:from, to:to,uri:uri, label:label});
         
         return true; 
     }
 
-
+    updateOntoModel = (elementsUri, property, value) =>
+    {
+        for (let node of this.ontoModel)
+        {
+            if (node.uri === elementsUri) {
+                node[property] = value; 
+                return true;
+            }
+        }
+        return false;
+    }
 
     getOntoModel = () =>
     {
@@ -55,7 +66,7 @@ export default class RuleController {
             {
                 return node;
             }
-            else if(direction === undefined && node["from"] === uri || node["to"] === uri)
+            else if(direction === undefined && (node["from"] === uri || node["to"] === uri))
             {
                 returnArr.push(node) ;
             }
@@ -66,7 +77,7 @@ export default class RuleController {
         }
         else 
         {
-            return false; 
+            return false;
         }
     }
 
@@ -135,7 +146,7 @@ export default class RuleController {
         var uri; 
         for (let i = this.ontoModel.length - 1; i >= 0; i--) 
         {
-            if (this.ontoModel[i].origin === origin)
+            if (this.ontoModel[i].fromRelation === origin)
             {
                 uri = this.ontoModel[i].uri;
                 return uri; 
