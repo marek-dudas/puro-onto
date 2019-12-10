@@ -3,9 +3,12 @@ import ReactDOM from "react-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import './App.css';
-//import $ from 'jquery';
-//import yuml_diagram from "yuml-diagram";
+import $ from 'jquery';
+import mermaid from "mermaid";
+import Parser from 'html-react-parser';
+import Pars from 'react-html-parser';
 import RuleController from './controllers/RuleController.js'; 
+
 //import RdfController from './controllers/RdfController.js';
 //import { thisTypeAnnotation } from "@babel/types";
 
@@ -14,14 +17,20 @@ class InputField extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      fieldValue: '', transformed: false, svg: null, title: "", fatherUrl: "", 
+      fieldValue: '', chart: "", title: "", fatherUrl: "", startTransform: true, 
       buttons: [], order: 0, 
-      ontoModel: [], queryRoots: [], roots: [], changeName: false, elName: ""};
+      ontoModel: [], queryRoots: [], roots: [], changeName: false, elName: "", type: ""};
+
 
     this.ruleController = new RuleController();
     //this.RdfController = new RuleController(); 
-   
+
+    mermaid.initialize({
+      startOnLoad: false
+        });
   }
+
+
 
   handleChange = (event) => {
     this.setState({ elName: event.target.value });
@@ -29,8 +38,9 @@ class InputField extends React.Component {
 
   handleSubmit = (event) => {
     event.preventDefault(); 
+    $("#tools").empty();
     var rules = this.ruleController.getDefault();
-    this.setState({buttons: rules.buttons, title: rules.title});
+    this.setState({buttons: rules.buttons, title: rules.title, type: rules.type, startTransform: false});
     /*
     var path = this.ruleController.getFullPath();
     console.log(path);
@@ -67,8 +77,26 @@ class InputField extends React.Component {
 
   }
 
-  handleClick = (selectedType, selectedUri, createdClass, origin) => {
+  handleClick = (selectedType, selectedUri, type, origin) => {
      let elName = this.state.elName;
+
+
+     let chart = `classDiagram
+     class Shape{
+         <<interface>>
+         noOfVertices
+         draw()
+     }
+     class Color{
+         <<enumeration>>
+         RED
+         BLUE
+         GREEN
+         WHITE
+         BLACK
+     }`;
+
+    
     
      if (elName === "" && this.state.changeName === true)
      {
@@ -76,36 +104,41 @@ class InputField extends React.Component {
      }
      else
      {
-        this.ruleController.nextElement(selectedType,selectedUri,createdClass, origin, elName).then(function(results) {
+      
+        this.ruleController.nextElement(selectedType,selectedUri,type, origin, elName).then(function(results) {
           console.log("call");
           console.log(results);
-          this.setState({buttons: results.buttons, title: results.title, elName: "", changeName: results.elName});
+          let svg = this.ruleController.getGraphSvg(); 
+          console.log(svg);
 
+          this.setState({buttons: results.buttons,type: results.type, title: results.title, elName: "", changeName: results.elName});
+          
+          if (svg !== false)
+          {
+            this.createGraph(svg);
+          }
+          
       }.bind(this));
     }
   }
 
 
-  createGraph(tripples) {
+  createGraph(chart) {
 
-    let yumlPrep = "";
-    let umlType = "kind"
-    for (let i = 0; i < tripples.length; i += 3) {
-      yumlPrep += "\n [<<" + umlType + ">> \\n " + tripples[i] + "]-" + tripples[i + 1] + ">[" + tripples[i + 2] + "]";
-    }
-    alert(yumlPrep);
-    var yumlText =
-      `// {type:class}  
-     // {direction:leftToRight}
-     // {generate: true}`+ yumlPrep;
-    console.log(yumlText);
-
-    //var yuml = new yuml_diagram();
-    //var svg = yuml.processYumlDocument(yumlText, false);
-
-    //this.setState({ transformed: true, svg: svg });
-
+ 
+      
+  
+      const cb = function(chart){  
+   
+        this.setState({chart: chart});
+      }.bind(this);
+      
+      mermaid.render('id1',chart,cb);
+      
+    
   }
+
+
   handleClickName = (stateName) =>
   {
     this.setState({changeName : !stateName});
@@ -115,24 +148,23 @@ class InputField extends React.Component {
     return (
       <div className="container">
         <div className="row">
-          <form className="w-50" onSubmit={this.handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="comment">Puro model</label>
-              <textarea className="form-control" rows="10" id="comment"  > </textarea>
+        <div className="form-group col-md-6" id="graph">
+            <label htmlFor="exampleFormControlTextarea1">Puro model</label>
+            <div className="form-control  transformWindow embed-responsive" id="exampleFormControlTextarea1">
+              <PuroModel /> 
             </div>
-            <button type="Submint" className="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
-              Start transformation
-            </button>
-          </form>
-          <div className="form-group w-50" id="graph">
-            <label htmlFor="exampleFormControlTextarea1">Onto model</label>
-            <div className="form-control  h-100" id="exampleFormControlTextarea1">
-               {this.state.transformed}
-            </div>
- 
           </div>
+          <div className="form-group col-md-6" id="graph">
+            <label htmlFor="exampleFormControlTextarea1">Onto model</label>
+            <div className="form-control transformWindow" id="exampleFormControlTextarea1">
+                <Mermaid chart = {this.state.chart}/>
+            </div>
+          </div>
+         
+            <QuestionPart startTransform = {this.state.startTransform} type = {this.state.type} title={this.state.title} onChange={this.handleChange} elName = {this.state.elName} buttons={this.state.buttons} onClick = {this.handleClick} onClickName = {this.handleClickName} changeName = {this.state.changeName} onSubmit={this.handleSubmit} />
+           
         </div>
-        <ModalWindow title={this.state.title} onChange={this.handleChange} elName = {this.state.elName} buttons={this.state.buttons} onClick = {this.handleClick} onClickName = {this.handleClickName} changeName = {this.state.changeName} />
+       
       </div>
 
 
@@ -141,6 +173,66 @@ class InputField extends React.Component {
   }
 
 }
+
+class PuroModel extends React.Component {
+
+  // $("#iFrameId").contents().find("#yourDiv").empty();
+  loaded = () =>
+  {
+    
+    $("#iframePuro").empty();
+  }
+  render() {
+    return  <iframe onLoad = {this.loaded}  id = "iframePuro" className="embed-responsive-item" src = "http://protegeserver.cz/purom4/?model=ca151b74998bee07d442652cc100f821"></iframe>;
+  }
+
+
+}
+
+class Mermaid extends React.Component {
+ 
+
+
+  render() {
+    return <div dangerouslySetInnerHTML={{__html: this.props.chart}}></div>;
+  }
+}
+
+
+class QuestionPart extends React.Component {
+  render() {
+    return(
+      <div className = "container-fluid text-center questionPart">
+         <button type="Submint" className= {this.props.startTransform ? "btn btn-primary" : "d-none"} data-toggle="modal" data-target="#exampleModal"  onClick = {this.props.onSubmit}>
+              Start transformation
+          </button>
+        <div className = {this.props.startTransform ? "d-none" : ""}>
+        <h3>{this.props.title}</h3>
+        <div className =  {this.props.changeName ? 'col-md-6 mx-auto' : 'd-none'}>
+                <div className = "input-group inputName">
+                      <div className="input-group-prepend">
+                        <span className="input-group-text" id="">Name of the element:</span>
+                      </div>
+                      <input placeholder = "Write name of the new element!" type="text" className="form-control" onChange = {this.props.onChange}  value = {this.props.elName}></input>
+                  
+                  </div> 
+                <h5 className = "text-center inputName">Select element's class:</h5>
+                
+              </div>
+          <div className = "divButtons text-center">
+            <ModalButtons  buttons={this.props.buttons} onClick = {this.props.onClick} type = {this.props.type} />
+          </div>
+         <div className = "text-right col-md-6 mx-auto divLowBtn"> 
+          <button type = "button" className="btn btn-primary btnModal">Undo</button>
+          <button type="button" className="btn btn-secondary btnModal" data-dismiss="modal">Cancel</button>
+         </div>
+         </div>
+      </div>
+    );
+  }
+
+}
+
 
 class ModalWindow extends React.Component {
   render() {
@@ -165,7 +257,7 @@ class ModalWindow extends React.Component {
               </div>
               <div className="container-fluid text-center">  
                         
-                    <ModalButtons buttons={this.props.buttons} onClick = {this.props.onClick} />
+                    <ModalButtons buttons={this.props.buttons} onClick = {this.props.onClick} type = {this.props.type} />
               </div>
             </div>
             <div className="modal-footer">
@@ -182,19 +274,52 @@ class ModalWindow extends React.Component {
 }
 
 class ModalButtons extends React.Component {
+  constructor(props) {
+    super(props);
+    this.refs = React.createRef();
+
+  }
 
   render() {
-    return (
-    <div className="row text-center col-md-12 ">
+    if (this.props.type.includes("ontoRelation-save"))
+    {
+      return (
+        <div className="row col-md-6 mx-auto">
+          <select ref = "relFrom" className = "col-md-6 mx-auto form-control">
+              {this.props.buttons.filter((val) => {
+                  return val.direction === "from";
+              }).map((rel) => { 
+               return <option value = {rel.name}>{rel.name}</option>
+              })}
+          </select>
+      
+          <select ref = "relTo" className = "col-md-6 mx-auto form-control"> 
+              {this.props.buttons.filter((val) => {
+                  return val.direction === "to";
+              }).map((rel) => { 
+               return <option value = {rel.name}>{rel.name}</option>
+              })}
+          </select> 
+          <button className = "btn btn-success" onClick = {() => this.props.onClick([this.refs.relFrom.value, this.refs.relTo.value], null, this.props.type, null)} >Next selected</button> 
+        </div> 
+      )
+    }
+    else
+    {
+      return (
+      <div className="row col-md-6 mx-auto">
       {this.props.buttons.map((value) => {
-        return  <div className="col-md-4 text-center">
-                      <button type="button"  className="btn btn-success btnModal" onClick = {() => this.props.onClick(value.name, value.uri, value.createdClass, value.origin)} >{value.name}</button>
+        return  <div className = "col-md-4 mx-auto">
+                      <button key = {this.props.uri} type="button"  className="btn btn-success btnModal" onClick = {() => this.props.onClick(value.name, value.uri, this.props.type, value.origin)} >{value.name}</button>
                 </div>
       })}
      </div>
     )
+    }
+
   }
 }
+
 
 class Board extends React.Component {
 

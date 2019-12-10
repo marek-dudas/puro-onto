@@ -1,5 +1,5 @@
 export default class Element {
-    constructor () {
+    constructor (uri, label, father, child, connect) {
         this.uri = uri; 
         this.label = label; 
         this.father = father;

@@ -21,5 +21,14 @@
   color: #09d3ac;
 }
 
-.btnModal {margin-bottom: 10px;}
+.divLowBtn {margin-top: 60px;}
+.transformWindow {height: 300px;
+  position: relative;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+.btnModal {margin: 2px;}
 .inputName {margin-bottom: 15px;}
+.questionPart {margin-top: 30px;}
+

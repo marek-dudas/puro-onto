@@ -3,10 +3,14 @@
     "Kind", "Subkind","Phase","Role", "Collective", "Quantity", "Relator","Category","RoleMixin","Mixin","Mode","Quality", "None"
     ],
     
-  "relationRules": [
+  "bRelationRules": [
     {"offer": ["Relator","Characterization"], "question":"Which type is relation VAL?"}
   ],
 
+  "relationRules":[
+    {"from": ["Mode", "Kind"], "to": ["Subkind"], "offer":["Arrow"], "fromT": ["*", 1], "toT": ["*",1] },
+    {"from": ["Kind"], "to": ["Role"], "offer":["Arrow"], "fromT": ["*, 1"], "toT": ["*,1"]}  
+  ],
   "questions":[
     {"type": "BType", "question": "Which type is a VAL?"},
     {"type": "instance", "question": "Which ontoUML elment represents instance VAL?"},
