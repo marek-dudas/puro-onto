@@ -28,7 +28,7 @@ export default class RdfController {
             var query = `
             PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            SELECT ?element ?elementLabel ?type ?father ?fatherLabel ?elementType ?fatherType WHERE 
+            SELECT ?element ?valuation ?elementLabel ?type ?father ?fatherLabel ?elementType ?fatherType WHERE 
             {
                 {<`+relator+`> puro:linkedTo ?element . <`+fromUri+`> puro:linkedTo <`+relator+`>} 
                 UNION
@@ -41,11 +41,14 @@ export default class RdfController {
                 OPTIONAL {?element puro:instanceOf ?father}
                 OPTIONAL {?father rdfs:label ?fatherLabel}
                 OPTIONAL {?father a ?fatherType}
+                OPTIONAL {?uri puro:linkedTo ?valuation. ?valuation a puro:BValuation}
+               
                
             }`
 
             return new Promise(resolve => {
                 this.sparqlQuery(query, function callback(result) {
+                   // result = this.deleteDuplicity(result, ["valuation"])
                     result["relationName"] = relator; 
                     resolve(result);
                   }); 
@@ -70,7 +73,7 @@ export default class RdfController {
                  {<` +elementsUri+`> puro:subTypeOf  ?uri }
                  ?uri a ?type . 
                  ?uri rdfs:label ?label . 
-    
+                
              }`;
             this.sparqlQuery(query, function callback(result) {  
                 
@@ -108,7 +111,7 @@ export default class RdfController {
                 var query = `
                  PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                 SELECT ?uri ?label ?father ?fatherType ?type ?fatherTypeRelation ?connect ?connectFrom ?child ?childType ?childRel WHERE 
+                 SELECT ?uri ?valuation ?valuationLabel ?label ?father ?fatherType ?type ?fatherTypeRelation ?connect ?connectFrom ?child ?childType ?childRel WHERE 
                  {
                      {?uri puro:instanceOf <` +elementsUri+`>}
                      UNION
@@ -116,6 +119,7 @@ export default class RdfController {
                      OPTIONAL {{?child puro:instanceOf ?uri} UNION {?child puro:subTypeOf ?uri}}
                      OPTIONAL {?child a ?childType}
                      OPTIONAL {{?child ?childRel ?uri} UNION {?child ?childRel ?uri}}
+                     OPTIONAL {?uri puro:linkedTo ?valuation. ?valuation a puro:BValuation}
                      ?uri ?fatherTypeRelation <` +elementsUri+`> .
                      ?uri rdfs:label ?label .
                      ?uri a ?type . 
@@ -129,7 +133,7 @@ export default class RdfController {
                     var checkArr = []; 
                     var connect = [];
 
-                    result = this.deleteDuplicity(result, ["connect", "connectFrom", "father", "fatherType","fatherTypeRelation","child","childType","childRel"]);
+                    result = this.deleteDuplicity(result, ["connect","valuation","connectFrom", "father", "fatherType","fatherTypeRelation","child","childType","childRel"]);
             
                     if (result.length > 0)
                     {
@@ -154,7 +158,7 @@ export default class RdfController {
                  var query = `
                  PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                 SELECT ?uri ?label ?type ?connect ?child ?fatherType ?father ?fatherTypeRelation ?childType ?childRel WHERE 
+                 SELECT ?uri ?valuation ?label ?type ?connect ?child ?fatherType ?father ?fatherTypeRelation ?childType ?childRel WHERE 
                  {
                      {?child puro:instanceOf ?uri}
                      UNION
@@ -165,6 +169,7 @@ export default class RdfController {
                      ?uri a puro:BType . 
                      ?uri a ?type
                      OPTIONAL {?uri puro:linkedTo ?connect}
+                     OPTIONAL {?uri puro:linkedTo ?valuation. ?valuation a puro:BValuation}
                      FILTER NOT EXISTS {?uri puro:linkedTo ?obj}
                      FILTER NOT EXISTS {?uri puro:subTypeOf ?object}
                  }`;
@@ -190,7 +195,7 @@ export default class RdfController {
                             // tady to nastav ve SPARQ 
                             node["connectFrom"] = [];
                     });
-
+                      this.deleteDuplicity(result,["valuation"]);
                       this.recursiveFindChild(0,result,[], function lastCall(lastResult){
                              resolve(lastResult);
                      });
@@ -295,13 +300,14 @@ export default class RdfController {
                 var query = `
                 PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
                 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                SELECT ?uri ?from ?to ?toType ?fromType ?label ?type  WHERE 
+                SELECT ?uri ?valuation ?from ?to ?toType ?fromType ?label ?type  WHERE 
                 {
                   ?uri a puro:BRelation . 
                   ?from puro:linkedTo ?uri .
                   ?uri puro:linkedTo ?to .
                   ?uri rdfs:label ?label . 
                   ?uri a ?type .
+                  OPTIONAL {?uri puro:linkedTo ?valuation. ?valuation a puro:BValuation}
                   {?from a puro:BObject}
                   UNION 
                   {?from a puro:BType}
@@ -314,8 +320,10 @@ export default class RdfController {
                 
                 return new Promise(resolve => {
                     this.sparqlQuery(query, function callback(result) {
+                        result = this.deleteDuplicity(result,["valuation", "from", "to", "toType", "fromType"]);
+                        console.log(result)
                         resolve(result);
-                    });
+                    }.bind(this));
                   }); 
             }
 

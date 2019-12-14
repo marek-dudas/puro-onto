@@ -14,9 +14,20 @@ export default class ImagController {
                 console.log(node)
                 if (node.ontoType === "Arrow")
                 {
+                    graphCommand += node.to.split('#')[1]  + " --|> " +  node.from.split('#')[1] + "\n"; 
+                }
+                else if (node.ontoType === "Relator")
+                {
+                    let fromT, toT; 
 
-
-                    graphCommand += node.from.split('#')[1] + " --|> " + node.to.split('#')[1] + "\n"; 
+                    if (node.ontoType === "Relator")
+                    {
+                        graphCommand += 'class '+ node.label + `{
+                            <<`+ node.ontoType + `>>
+                        }\n`;   
+                    }
+                    graphCommand += node.from.split('#')[1] +" "+ (fromT ? fromT : "") +" .. "+ (toT ? toT : "") + " " + node.label +  " : <<Mediation>>\n"; 
+                    graphCommand += node.label +" "+ (fromT ? fromT : "") +" .. "+ (toT ? toT : "") + " " + node.to.split('#')[1] + " : <<Mediation>>\n"; 
                 }
                 else
                 {
@@ -25,6 +36,7 @@ export default class ImagController {
                 
                     graphCommand += node.from.split('#')[1] +" "+ (fromT = fromT ? fromT : "") +" .. "+ (toT = toT ? toT : "") + " " + node.to.split('#')[1] + " : " + "<<"+node.ontoType+">>" + " \n"; 
                 }
+
             }
             else if (node["type"] !== "relation")
             {

@@ -8,8 +8,9 @@
   ],
 
   "relationRules":[
-    {"from": ["Mode", "Kind"], "to": ["Subkind"], "offer":["Arrow"], "fromT": ["*", 1], "toT": ["*",1] },
-    {"from": ["Kind"], "to": ["Role"], "offer":["Arrow"], "fromT": ["*, 1"], "toT": ["*,1"]}  
+    {"from": ["Mode", "Kind"], "to": ["Subkind"], "offer":["Arrow"], "fromT": ["*", "1"], "toT": ["*","1"] },
+    {"from": ["Kind"], "to": ["Role"], "offer":["Arrow"], "fromT": ["*, 1"], "toT": ["*,1"]},
+    {"from": ["*"], "to":["Datatype"], "offer":["Row"], "fromT": ["*","1","0"], "toT": ["*","1","0"] }
   ],
   "questions":[
     {"type": "BType", "question": "Which type is a VAL?"},
@@ -36,12 +37,16 @@
   ],
 
    "Mode":[
-    {"key": "superType", "type": ["Kind","Role"]},
+    {"key": "superType", "type": []},
     {"key": "subType", "type": ["Subkind", "Kind"]}
     ],
   "Role":[
     {"key": "superType", "type": ["Kind","Role", "Relator"]},
-    {"key": "subType", "type": ["Kind", "Role", "Relator"]}
+    {"key": "subType", "type": []},
+    {"key": "connect", "type": []},
+    {"key": "connected", "types": ["Kind","Role"], "superType": ["Kind"]}
+
+
     ],
   "Kind":[
     {"key": "superType", "type": []},

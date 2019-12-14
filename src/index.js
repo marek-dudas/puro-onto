@@ -79,7 +79,7 @@ class InputField extends React.Component {
 
   handleClick = (selectedType, selectedUri, type, origin) => {
      let elName = this.state.elName;
-
+  
 
      let chart = `classDiagram
      class Shape{
@@ -109,7 +109,6 @@ class InputField extends React.Component {
           console.log("call");
           console.log(results);
           let svg = this.ruleController.getGraphSvg(); 
-          console.log(svg);
 
           this.setState({buttons: results.buttons,type: results.type, title: results.title, elName: "", changeName: results.elName});
           
@@ -304,13 +303,19 @@ class ModalButtons extends React.Component {
         </div> 
       )
     }
+    else if (this.props.type.includes("end"))
+    {
+      return (
+         <button className = "btn btn-success" >Download Onto-UML graph</button>
+      ); 
+    }
     else
     {
       return (
       <div className="row col-md-6 mx-auto">
       {this.props.buttons.map((value) => {
         return  <div className = "col-md-4 mx-auto">
-                      <button key = {this.props.uri} type="button"  className="btn btn-success btnModal" onClick = {() => this.props.onClick(value.name, value.uri, this.props.type, value.origin)} >{value.name}</button>
+                      <button key = {this.props.uri} type="button"  className="btn btn-success btnModal" onClick = {() => this.props.onClick(value.name, value.uri, this.props.type, value.origin)} >{(this.props.type.includes("dataType")) ? "Next" : value.name}</button>
                 </div>
       })}
      </div>

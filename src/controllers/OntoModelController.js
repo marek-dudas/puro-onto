@@ -63,26 +63,22 @@ export default class RuleController {
     
     getElementsRelation = (uri, direction) =>
     {
+      
         let returnArr = []; 
         for (let node of this.ontoModel)
         {
             if (node["type"] === "relation" && node[direction] === uri)
             {
-                return node;
+                //může být víc 
+                returnArr.push(node);
             }
-            else if(direction === undefined && (node["from"] === uri || node["to"] === uri))
+            else if(direction === "connect" && (node["from"] === uri || node["to"] === uri))
             {
                 returnArr.push(node) ;
             }
         }
-        if (returnArr.length > 0) 
-        {
-            return returnArr;
-        }
-        else 
-        {
-            return false;
-        }
+        
+        return returnArr; 
     }
 
 
@@ -185,7 +181,8 @@ export default class RuleController {
 
     getRelationElements = (elName, element, selectedUri, relationUri, addRulesLenght, relationRuleIndex, puroType, ontoUri, ruleKey) => 
     {
-        if (elName !== "")
+     
+        if (elName !== "" && puroType !== "dataType")
         {
         
             let father;
@@ -247,6 +244,33 @@ export default class RuleController {
             return [elementFather.uri, element.uri.value];
             //this.addRelation("Dodělat závislé na pravidlech", elementFather.uri , element.uri.value);
         }
+  
+    }
+
+    getRelatedTypes = (elUri, direction, ontoType) => 
+    {
+        let rels = this.getElementsRelation(elUri, direction);
+        let elements = [];
+        let types = []; 
+        
+
+        for (let rel of rels)
+        {
+          //Arrow 
+          if (rel.ontoType === ontoType)
+          {
+              elements.push(rel.to);
+              types.push(this.getElementOntoType(rel.to));
+          }
+          else if (ontoType === false && rel.ontoType !== "Arrow")
+          {
+            let el = (elUri === rel.to) ? rel.from : rel.to;
+            elements.push(el);
+            types.push(this.getElementOntoType(el)); 
+          }
+        }  
+
+        return types; 
     }
 
 

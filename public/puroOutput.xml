@@ -63,6 +63,7 @@
       <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
       <puro:rigid>true</puro:rigid>
       <puro:subTypeOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Topic" />
+      <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#when_May_6" />
    </puro:BType>
    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Topic">
       <rdfs:label>Topic</rdfs:label>
