@@ -6,7 +6,7 @@
     "bootstrap": "^4.3.1",
     "html-react-parser": "^0.10.0",
     "jquery": "^3.4.1",
-    "mermaid": "^8.4.3",
+    "mermaid": "^8.4.4",
     "rdflib": "^1.0.4",
     "rdfstore": "^0.9.17",
     "react": "^16.10.2",

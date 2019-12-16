@@ -48,7 +48,7 @@ export default class RdfController {
 
             return new Promise(resolve => {
                 this.sparqlQuery(query, function callback(result) {
-                   // result = this.deleteDuplicity(result, ["valuation"])
+                     result = this.deleteDuplicity(result, ["valuation"])
                     result["relationName"] = relator; 
                     resolve(result);
                   }); 
@@ -124,8 +124,8 @@ export default class RdfController {
                      ?uri rdfs:label ?label .
                      ?uri a ?type . 
                      <` +elementsUri+`> a ?fatherType
-                     OPTIONAL {?uri puro:linkedTo ?connect}
-                     OPTIONAL {?connectFrom puro:linkedTo ?uri}
+                     OPTIONAL {?uri puro:linkedTo ?connect. ?connect a puro:BRelation}
+                     OPTIONAL {?connectFrom puro:linkedTo ?uri. ?connectFrom a puro:BRelaion}
                      BIND ( <`+elementsUri+`>  AS ?father)
                  }`;
                 this.sparqlQuery(query, function callback(result) {  
@@ -133,7 +133,7 @@ export default class RdfController {
                     var checkArr = []; 
                     var connect = [];
 
-                    result = this.deleteDuplicity(result, ["connect","valuation","connectFrom", "father", "fatherType","fatherTypeRelation","child","childType","childRel"]);
+                    result = this.deleteDuplicity(result, ["connect","connectFrom", "father", "fatherType","fatherTypeRelation","child","childType","childRel","valuation"]);
             
                     if (result.length > 0)
                     {
@@ -320,7 +320,7 @@ export default class RdfController {
                 
                 return new Promise(resolve => {
                     this.sparqlQuery(query, function callback(result) {
-                        result = this.deleteDuplicity(result,["valuation", "from", "to", "toType", "fromType"]);
+                        result = this.deleteDuplicity(result,[ "from", "to", "toType", "fromType", "valuation"]);
                         console.log(result)
                         resolve(result);
                     }.bind(this));

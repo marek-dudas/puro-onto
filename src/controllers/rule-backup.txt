@@ -9,6 +9,8 @@ export default class RuleController {
     //ruleSelection queryTree, 
     ruleSelection = (rules, key, element, ontoType, rule, queryTree) => 
     {
+        
+        alert(key)
         let commands; 
         let additionalRules;
         let offerTypes;
@@ -22,9 +24,7 @@ export default class RuleController {
         }
         else
         {
-            console.log(rules)
-            console.log(key)
-            commands = this.getSpecificRule(rules,key);
+            commands = this.getSpecificRule(rules,key); 
             additionalRules = this.getAdditionalRule(commands,ontoType);
             offerTypes = (additionalRules.length > 0 ) ? offerTypes = additionalRules : offerTypes = commands.offer;   
         }
@@ -87,7 +87,7 @@ export default class RuleController {
             let rules = this.rulesJson[element.ontoType]; 
            
             let check = []; 
-            let addRule; 
+            let checkRelation = false;
             
 
             //Tady by měla být pole jelikož to může být 1:N 
@@ -95,105 +95,60 @@ export default class RuleController {
             // udělat connect -> subtype -> supertype jenom v případě arrow 
 
  
-        
-            let elTypes = {
-                superType: ontoController.getRelatedTypes(element.uri,"to", "Arrow"), 
-                subType: ontoController.getRelatedTypes(element.uri,"from","Arrow"), 
-                connect: ontoController.getRelatedTypes(element.uri, "connect", false)
-            };
+            
+            let subElTypes = ontoController.getRelatedTypes(element.uri,"from","Arrow");
+            let superElTypes = ontoController.getRelatedTypes(element.uri,"to", "Arrow");
+            let connectElTypes = ontoController.getRelatedTypes(element.uri, "connect", false);
+
 
 
     
             for (let rule of rules)
             {
-                check = this.elementConsistencySelection(rule,elTypes.connect,"connect",element,check,rules,elTypes);
-                check = this.elementConsistencySelection(rule,elTypes.superType,"superType",element,check,rules,elTypes);
-                check = this.elementConsistencySelection(rule,elTypes.subType,"subType",element,check,rules,elTypes);
-            }
-
-            addRule = this.getSpecificRule(rules,"connected"); 
-            if (addRule !== false)
-            {
-                
+             
+                if(rule.key === "superType")
+                {
+                        if (!rule.type.some(r=> superElTypes.includes(r)) && rule.type.length > 0 )
+                        {
+                            // if includes none -> zkontrolovat lenght superType -> zeptat se jestli chci doplnit superType -> nabídnout co je v tabulce -> zkontrolovat jestli už není
+                            check.push({key: "superType", types: rule.type, element:element.uri});
+                        }
+                }
+                else if (rule.key === "subType")
+                {
+                       if (!rule.type.some(r=> subElTypes.includes(r)) && rule.type.length > 0)
+                       {
+                           check.push({key: "subType", types: rule.type, element: element.uri});
+                       }
+                }  
+                else // connect
+                {
+                    if (!rule.type.some(r=> connectElTypes.includes(r)) && rule.type.length > 0)
+                    {
+                        check.push({key: "connect", types: rule.type, element: element.uri});
+                    }
+                }
             }
             
          
             return check;
     }
 
-
-
-    elementConsistencySelection = (rule,elTypes,key,element,check,rules,allTypes) =>
-    {
-        if(rule.key === key)
-        {
-                if (!rule.type.some(r=> elTypes.includes(r)) && rule.type.length > 0 )
-                {
-                    // if includes none -> zkontrolovat lenght superType -> zeptat se jestli chci doplnit superType -> nabídnout co je v tabulce -> zkontrolovat jestli už není
-                    check.push({key: key, types: rule.type, element:element.uri, rule:rule});
-                }
-                else 
-                {
-                    let additionalRules =  this.getSpecificRule(rules, key + "ed", true);
-                    if (additionalRules !== false)
-                    {
-                        for (let addRule of additionalRules)
-                        {
-                            if (addRule.type.some(r=> elTypes.includes(r))) {
-                                check = this.elementConsAddSelection("superType",addRule,elTypes,check,element,allTypes);
-                                check = this.elementConsAddSelection("subType",addRule,elTypes,check,element,allTypes);
-                                check = this.elementConsAddSelection("connect",addRule,elTypes,check,element,allTypes);
-                            }
-                        }
-                    }
-                }
-
-        }
-        return check; 
-    }
     
-    elementConsAddSelection (type, rule, elTypes, check, element, allTypes)
-    {
-        if (type in rule)
-        {
-            if (!rule[type].some(r=> allTypes[type].includes(r)) && rule[type].length > 0 )
-            {
-                check.push({key: type, types: rule[type], element:element.uri, rule:rule});
-            }
-        }
-        return check; 
-    }
+   
 
-    getSpecificRule = (rules, key, moreThanOne = false) =>
+    getSpecificRule = (rules, key) =>
     {
-        let addRules = [];
         for (let node of rules)
         {
-         
             if (node.key === key)
             {
-                if (moreThanOne === true)
-                {
-                    addRules.push(node);
-                }
-                else
-                {   
-                    return node; 
-                }   
+                return node; 
             }
         }
 
-        if (addRules.length > 0)
-        {
-            return rules;
-        }
-        else
-        {
-            return false; 
-        }     
+        return false; 
     }
-
-
 
     getAdditionalRule = (rule, selectedType) =>
     {

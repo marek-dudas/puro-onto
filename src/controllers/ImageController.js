@@ -1,4 +1,5 @@
 import { notEqual } from "assert";
+import { linkRelationProperty } from "rdflib/lib/util";
 
 export default class ImagController {
 
@@ -18,23 +19,27 @@ export default class ImagController {
                 }
                 else if (node.ontoType === "Relator")
                 {
-                    let fromT, toT; 
-
-                    if (node.ontoType === "Relator")
+                    if (node.from && node.to) 
                     {
+                       let fromT = node.fromType;
+                        let toT = node.toType;
+
+                    
                         graphCommand += 'class '+ node.label + `{
-                            <<`+ node.ontoType + `>>
+                                <<`+ node.ontoType + `>>
                         }\n`;   
+                        
+                        graphCommand += node.from.split('#')[1] +" "+ (fromT ? '"'+fromT[0]+'"' : "") +" .. "+ (toT ? '"'+fromT[1]+'"' : "") + " " + node.label +  " : <<Mediation>>\n"; 
+                        graphCommand += node.label +" "+ (toT ? '"'+toT[0]+'"' : "") +" .. "+ (toT ? '"'+toT[1]+'"' : "") + " " + node.to.split('#')[1] + " : <<Mediation>>\n"; 
                     }
-                    graphCommand += node.from.split('#')[1] +" "+ (fromT ? fromT : "") +" .. "+ (toT ? toT : "") + " " + node.label +  " : <<Mediation>>\n"; 
-                    graphCommand += node.label +" "+ (fromT ? fromT : "") +" .. "+ (toT ? toT : "") + " " + node.to.split('#')[1] + " : <<Mediation>>\n"; 
                 }
                 else
                 {
                     // může být i noType -
-                    let fromT, toT; 
+                    let fromT = node.fromType;
+                    let toT = node.toType;
                 
-                    graphCommand += node.from.split('#')[1] +" "+ (fromT = fromT ? fromT : "") +" .. "+ (toT = toT ? toT : "") + " " + node.to.split('#')[1] + " : " + "<<"+node.ontoType+">>" + " \n"; 
+                    graphCommand +=node.from.split('#')[1] +" "+ (fromT ? '"'+fromT+'"' : "") +" .. "+ (toT ? '"'+toT+'"' : "") + " " + node.to.split('#')[1] + (node.ontoType === "Row" ? "" : " : <<"+node.ontoType+">>") + "\n"; 
                 }
 
             }
@@ -46,7 +51,7 @@ export default class ImagController {
                 }\n`;   
             }
         }
-        
+        console.log(graphCommand);
         return graphCommand = (graphCommand.trim() === "classDiagram") ? false : graphCommand; 
     }
 

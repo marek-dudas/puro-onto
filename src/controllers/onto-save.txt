@@ -65,7 +65,6 @@ export default class RuleController {
     {
       
         let returnArr = []; 
-
         for (let node of this.ontoModel)
         {
             if (node["type"] === "relation" && node[direction] === uri)
@@ -227,6 +226,7 @@ export default class RuleController {
             
             if (lastRelElement.direction !== ruleKey && lastRelElement.fromRelation === relationUri)
             {
+                
                 this.updateOntoModel(relationUri,ruleKey,passEl);
                 return relationUri; 
             }
@@ -247,45 +247,26 @@ export default class RuleController {
   
     }
 
-    checkDuplicity = (label) => 
-    {
-        for (let node of this.ontoModel)
-        {
-            if (node.label === label) {
-                return false;
-            }
-        }
-
-        return true; 
-    }
-
     getRelatedTypes = (elUri, direction, ontoType) => 
     {
         let rels = this.getElementsRelation(elUri, direction);
         let elements = [];
         let types = []; 
+        
 
         for (let rel of rels)
         {
           //Arrow 
           if (rel.ontoType === ontoType)
           {
-              let el = (elUri === rel.to) ? rel.from : rel.to;
-              elements.push(el);
-              types.push(this.getElementOntoType(el));
+              elements.push(rel.to);
+              types.push(this.getElementOntoType(rel.to));
           }
           else if (ontoType === false && rel.ontoType !== "Arrow")
           {
-            if (rel.ontoType === "Relator")
-            {
-                types.push(rel.ontoType);
-            }
-            else 
-            {
-                let el = (elUri === rel.to) ? rel.from : rel.to;
-                elements.push(el);
-                types.push(this.getElementOntoType(el)); 
-            }
+            let el = (elUri === rel.to) ? rel.from : rel.to;
+            elements.push(el);
+            types.push(this.getElementOntoType(el)); 
           }
         }  
 

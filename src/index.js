@@ -7,7 +7,7 @@ import $ from 'jquery';
 import mermaid from "mermaid";
 import Parser from 'html-react-parser';
 import Pars from 'react-html-parser';
-import RuleController from './controllers/RuleController.js'; 
+import EventController from './controllers/EventController.js'; 
 
 //import RdfController from './controllers/RdfController.js';
 //import { thisTypeAnnotation } from "@babel/types";
@@ -22,11 +22,12 @@ class InputField extends React.Component {
       ontoModel: [], queryRoots: [], roots: [], changeName: false, elName: "", type: ""};
 
 
-    this.ruleController = new RuleController();
+    this.eventController = new EventController();
     //this.RdfController = new RuleController(); 
 
     mermaid.initialize({
-      startOnLoad: false
+      startOnLoad: false,
+      //themeCSS: 'g.classGroup text { font-size: 40px; }',
         });
   }
 
@@ -39,7 +40,7 @@ class InputField extends React.Component {
   handleSubmit = (event) => {
     event.preventDefault(); 
     $("#tools").empty();
-    var rules = this.ruleController.getDefault();
+    var rules = this.eventController.getDefault();
     this.setState({buttons: rules.buttons, title: rules.title, type: rules.type, startTransform: false});
     /*
     var path = this.ruleController.getFullPath();
@@ -80,7 +81,7 @@ class InputField extends React.Component {
   handleClick = (selectedType, selectedUri, type, origin) => {
      let elName = this.state.elName;
   
-
+   
      let chart = `classDiagram
      class Shape{
          <<interface>>
@@ -104,20 +105,29 @@ class InputField extends React.Component {
      }
      else
      {
-      
-        this.ruleController.nextElement(selectedType,selectedUri,type, origin, elName).then(function(results) {
-          console.log("call");
-          console.log(results);
-          let svg = this.ruleController.getGraphSvg(); 
 
-          this.setState({buttons: results.buttons,type: results.type, title: results.title, elName: "", changeName: results.elName});
-          
-          if (svg !== false)
-          {
-            this.createGraph(svg);
-          }
-          
-      }.bind(this));
+        elName = elName.replace(/\s/g, '_');
+        
+        if (elName !== "" && this.state.changeName === true && !this.eventController.checkDuplicity(elName))
+        {
+          alert("Element already exists! Please choose different name.")
+        }
+        else
+        {
+          this.eventController.nextElement(selectedType,selectedUri,type, origin, elName).then(function(results) {
+            console.log("call");
+            console.log(results);
+            let svg = this.eventController.getGraphSvg(); 
+  
+            this.setState({buttons: results.buttons,type: results.type, title: results.title, elName: "", changeName: results.elName});
+            
+            if (svg !== false)
+            {
+              this.createGraph(svg);
+            }
+            
+          }.bind(this));
+        }
     }
   }
 
@@ -207,7 +217,7 @@ class QuestionPart extends React.Component {
           </button>
         <div className = {this.props.startTransform ? "d-none" : ""}>
         <h3>{this.props.title}</h3>
-        <div className =  {this.props.changeName ? 'col-md-6 mx-auto' : 'd-none'}>
+        <div className =  {this.props.changeName === true ? 'col-md-6 mx-auto' : 'd-none'}>
                 <div className = "input-group inputName">
                       <div className="input-group-prepend">
                         <span className="input-group-text" id="">Name of the element:</span>
@@ -219,7 +229,7 @@ class QuestionPart extends React.Component {
                 
               </div>
           <div className = "divButtons text-center">
-            <ModalButtons  buttons={this.props.buttons} onClick = {this.props.onClick} type = {this.props.type} />
+            <ModalButtons  buttons={this.props.buttons} onClick = {this.props.onClick} type = {this.props.type} elNames = {this.props.changeName} />
           </div>
          <div className = "text-right col-md-6 mx-auto divLowBtn"> 
           <button type = "button" className="btn btn-primary btnModal">Undo</button>
@@ -276,7 +286,7 @@ class ModalButtons extends React.Component {
   constructor(props) {
     super(props);
     this.refs = React.createRef();
-
+  
   }
 
   render() {
@@ -284,29 +294,35 @@ class ModalButtons extends React.Component {
     {
       return (
         <div className="row col-md-6 mx-auto">
-          <select ref = "relFrom" className = "col-md-6 mx-auto form-control">
+          <label className="label label-default col-md-6 mx-auto form-control">{this.props.elNames[0]}</label>
+          <label className="label label-default col-md-6 mx-auto form-control">{this.props.elNames[1]}</label>  
+          <select ref = "relFrom" className = "col-md-6 mx-auto form-control cardinalitySelect">
               {this.props.buttons.filter((val) => {
                   return val.direction === "from";
               }).map((rel) => { 
                return <option value = {rel.name}>{rel.name}</option>
               })}
           </select>
-      
-          <select ref = "relTo" className = "col-md-6 mx-auto form-control"> 
+            
+          <select ref = "relTo" className = "col-md-6 mx-auto form-control cardinalitySelect"> 
               {this.props.buttons.filter((val) => {
                   return val.direction === "to";
               }).map((rel) => { 
                return <option value = {rel.name}>{rel.name}</option>
               })}
           </select> 
-          <button className = "btn btn-success" onClick = {() => this.props.onClick([this.refs.relFrom.value, this.refs.relTo.value], null, this.props.type, null)} >Next selected</button> 
+        
+          <button className = "btn btn-success mx-auto questionPart" onClick = {() => this.props.onClick([this.refs.relFrom.value, this.refs.relTo.value], null, this.props.type)}>Next</button> 
         </div> 
       )
     }
     else if (this.props.type.includes("end"))
     {
       return (
+        <div className = "col-md-6 mx-auto">
          <button className = "btn btn-success" >Download Onto-UML graph</button>
+         <button className = "btn btn-success" >Convert to OLED format</button>
+        </div>
       ); 
     }
     else
