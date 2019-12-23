@@ -51,7 +51,7 @@ export default class ImagController {
                 }\n`;   
             }
         }
-        console.log(graphCommand);
+        
         return graphCommand = (graphCommand.trim() === "classDiagram") ? false : graphCommand; 
     }
 

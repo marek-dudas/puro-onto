@@ -27,6 +27,7 @@
   width: 100%;
   overflow-y: auto;
   overflow-x: auto;
+  
 }
 .btnModal {margin: 2px;}
 .inputName {margin-bottom: 15px;}

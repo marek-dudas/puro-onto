@@ -10,7 +10,7 @@ export default class RdfController {
         
         $.ajax({
             type: "GET",
-            url: "http://localhost:3000/puroOutput.xml",
+            url: "puroOutput.xml",
             async: false,
             cache: false,
             dataType: "xml",

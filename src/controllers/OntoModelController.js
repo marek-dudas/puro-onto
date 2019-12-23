@@ -9,15 +9,15 @@ export default class RuleController {
     } 
   
     
-    addToOntoModel = (uri, label, ontoType, puroType, relationName, direction,from, to, elName) => 
+    addToOntoModel = (uri, label, ontoType, puroType, relationName, direction,from, to, elName, nameWasChange = false) => 
     {
     
        
         let elPuroType;
         let elLabel;
         let elUri; 
-        
-        if (elName !==  "" && elName !== undefined)
+
+        if (elName !==  "" && elName !== undefined && nameWasChange === false) 
         {
             elPuroType = false;
             elLabel = elName;
@@ -26,7 +26,7 @@ export default class RuleController {
         else
         {
             elPuroType = puroType;
-            elLabel = label;
+            elLabel = nameWasChange ? elName : label; 
             elUri = uri; 
         }
 
@@ -180,12 +180,12 @@ export default class RuleController {
         return result;
     }
 
-    getRelationElements = (elName, element, selectedUri, relationUri, addRulesLenght, relationRuleIndex, puroType, ontoUri, ruleKey) => 
+    getRelationElements = (elName, element, selectedUri, relationUri, addRulesLenght, relationRuleIndex, puroType, ontoUri, ruleKey, nameWasChange = false) => 
     {
-     
-        if (elName !== "" && puroType !== "dataType")
-        {
         
+        
+        if (elName !== "" && puroType !== "dataType" && nameWasChange === false)
+        {
             let father;
             let passEl; 
 
@@ -238,7 +238,6 @@ export default class RuleController {
         }  
         else if (puroType === "elementSelection")
         {   
-            let element = this.getElementByUri(selectedUri);
             //father může být pole.. předělat!!!
             let elementFather = this.ontoController.getOntoElement(element.father[0]);
             return [elementFather.uri, element.uri.value];

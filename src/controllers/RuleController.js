@@ -1,7 +1,10 @@
-export default class RuleController {
+import MainController from "./MainController";
+
+export default class RuleController extends MainController {
 
     constructor (rules)
     {
+        super();
         this.rulesJson = rules;   
         
     }
@@ -15,6 +18,7 @@ export default class RuleController {
         let uri;
         let question;
         let needElName;
+        let elName = "";
         
         if (rule)
         {
@@ -40,9 +44,11 @@ export default class RuleController {
             }
             else
             {
+                
                 needElName = false;
                 uri = element.uri.value;
                 question = this.rulesJson.questions[0].question.replace("VAL",element.label.value);
+                elName = element.label.value; 
             }
         }
         else
@@ -50,13 +56,8 @@ export default class RuleController {
             uri = false; 
             question = rules.questions[2].question;
         }
-       
-
-        let result = offerTypes.map(function (ruleClass) {
-            return {"name": ruleClass, "uri": uri ,"origin": key};
-        }.bind(this));
-
-        return Promise.resolve({"buttons": result, "title": question, "elName": needElName, "type": "classSelection"}); 
+  
+        return this.createButtons(offerTypes,question, "classSelection",needElName,elName);
     }
 
     isElementInstace = (element, queryTree) =>
@@ -212,7 +213,7 @@ export default class RuleController {
     commonRuleSelection = (element, key, ontoModel) => 
     {
         let result = [];
-      
+
         // tohle vyřeš na úrovni onto modelu!
         let fatherOnto = [];
         let childOnto = [];
@@ -248,33 +249,13 @@ export default class RuleController {
                 for(let val of rule.offer) 
                 { 
                     //question atd...
-                    result.push({"name":this.rulesJson.classes[val], "uri":element.uri.value, "origin": key}); 
+                    result.push(this.rulesJson.classes[val]); 
                 }
-                return {"buttons": result, "title": element.label.value, type: "elementSelection"};
+
+                return this.createButtons(result,element.label.value, "elementSelection",false, element.label.value);
             }
         }
     }
 
-    delUri = (uri) => 
-    {
-        var result = []; 
-        if (typeof uri === 'string')
-        {
-            return uri.split('#')[1];
-        }
-        else if (Array.isArray(uri))
-        {
-            for(let element of uri)
-            {
-                result.push(element.split('#')[1]);
-            }
-            return result; 
-        }
-        else
-        {
-            return "";
-        }
-        
-    }
 
 }

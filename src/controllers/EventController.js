@@ -3,33 +3,34 @@ import RdfController from './RdfController.js';
 import OntoModelController from './OntoModelController';
 import ImageController from './ImageController.js';
 import RuleController from './RuleController.js';
+import MainController from './MainController.js';
 // TODO -> v případě dvou otců projdi cyklem a zkontroluj oba!!!!
 // TODO -> vyřešit vazby
 // TODO -> next element do objektového schématu -> zatím prototyp 
 // TODO -> třída element pro sjednocení properties 
 // UNDO 
 
-export default class EventController {
+export default class EventController extends MainController{
     constructor() {
-        
+        super();
         this.rulesJson = JSON.parse(JSON.stringify(jsonData));      
         this.rdfController = new RdfController(); 
         this.ontoController = new OntoModelController();  
         this.imageController = new ImageController();
         this.ruleController = new RuleController(this.rulesJson);
-        var queryTreePromise = this.rdfController.getFullPath();
+        const queryTreePromise = this.rdfController.getFullPath();
 
         
-        queryTreePromise.then(function(results) {
+        queryTreePromise.then(results => {
             this.queryTree = results;   
             console.log(results);        
-        }.bind(this));
+        });
         
-        var relationsPromise = this.rdfController.getRelations();
-        relationsPromise.then(function(results) {
+        const relationsPromise = this.rdfController.getRelations();
+        relationsPromise.then(results => {
             this.relations = results;   
             console.log(results);        
-        }.bind(this));
+        });
 
                      
         this.ontoUri = "http://lod2-dev.vse.cz/data/ontomodels#";
@@ -43,11 +44,9 @@ export default class EventController {
         this.relation = null;
         this.relationIndex = 0; 
         this.relationType = null; 
-
-        this.relationTreeIndex = 0; 
-        this.relationTreeArr = [];
         
         this.setIndexexToDefault();
+
     }
     
     getDefault = () =>
@@ -55,9 +54,11 @@ export default class EventController {
      
         // tady se zeptej na type relationu 
         // tohle není do defaultu ale do next element
-        // hod vyjmku v případě když nebude žádný relation k dispozici
-        let relation = this.relations[this.relationOrderIndex];
+        // hod vyjmku v případě když nebude žádný relation k dispozic
+
+        const relation = this.relations[this.relationOrderIndex];
         this.relation = relation;
+        this.ruleKey = "from";
 
         if(this.relation.valuation.length > 0)
         {
@@ -65,39 +66,34 @@ export default class EventController {
         }
         else
         {
-            let result = this.rulesJson.bRelationRules[0].offer.map(function (ruleClass) {
-                return {"name": ruleClass, "uri":relation.uri.value, "origin":"from"};
-            }.bind(this));
+            //this.elUri = relation.uri.value;
+
+            this.elementUri = relation.uri.value;
             
-            return {"buttons": result, "title": this.rulesJson.bRelationRules[0].question.replace("VAL",relation.label.value), "type": this.delUri(relation.type.value) };
+            const question = this.rulesJson.bRelationRules[0].question.replace("VAL",relation.label.value);
+            return this.createButtons(this.rulesJson.bRelationRules[0].offer, question,this.delUri(relation.type.value), false, relation.label.value)
+
+            
         }
     }
-
-
-
     // předělat do objektů a metod-> sjednotit kód 
     //puroType createdClass 
-    nextElement = async (selectedType, selectedUri, puroType, ruleKey,elName) =>
+    //ruleKey držet v property objektu 
+    nextElement = async (selectedType, selectedUri, puroType ,elName, nameWasChange) =>
     {  
-        
         //první průchod na relataion 
         if (puroType === "BRelation")
         {   
-       
-           return this.relationWasSelected (selectedType, ruleKey);
+           return this.relationWasSelected(selectedType, this.ruleKey);
         }
-        else //(puroType === "classSelection" || puroType === "elementSelection") 
+        else 
         {
-            //Jméno půjde měnit vždy.. teď záleží  
-            
-            
+            //Jméno půjde měnit vždy.. teď záleží   
             // create relation 
             let relationEl; 
             let additionalRule; 
             let relFlow = puroType;
-            let relType; 
             let elRelTypes;
-
             if (puroType.includes("ontoRelation-save-bRelation"))
             {
                 if(puroType.includes("relator"))
@@ -113,31 +109,28 @@ export default class EventController {
                     }
                 }
                 else
-                {
+                {     
                     this.ontoController.updateOntoModel(this.relation.uri.value,"fromType", selectedType[0]);
                     this.ontoController.updateOntoModel(this.relation.uri.value,"toType", selectedType[1]);
                 }
+
                 selectedType = this.elSettings.selectedType;
-                selectedUri = this.elSettings.selectedUri;
                 puroType = this.elSettings.puroType;
-                ruleKey = this.elSettings.ruleKey;
                 elName = this.elSettings.elName;
                 relationEl = this.elSettings.relationEl;
                 additionalRule = this.elSettings.additionalRule; 
-
             }
-          
+
             if (!puroType.includes("ontoRelation")  && puroType !== "dataType")
             {
-               additionalRule = this.ruleController.getAdditionalRule(this.ruleController.getSpecificRule(this.rulesJson[this.relationType],ruleKey),selectedType);
-
-               relationEl = this.ontoController.getRelationElements(elName, this.getElementByUri(selectedUri), selectedUri,this.relation.uri.value, additionalRule.length, this.relationRuleIndex, puroType, this.ontoUri, ruleKey);
-               this.elSettings = {selectedType: selectedType, selectedUri: selectedUri, puroType: puroType, ruleKey:ruleKey, elName:elName, relationEl: relationEl, additionalRule: additionalRule, relType: ""};
-               //alert(relationEl)
+                
+               additionalRule = this.ruleController.getAdditionalRule(this.ruleController.getSpecificRule(this.rulesJson[this.relationType],this.ruleKey),selectedType);
+               relationEl = this.ontoController.getRelationElements(elName, this.getElementByUri(this.elementUri), this.elementUri,this.relation.uri.value, additionalRule.length, this.relationRuleIndex, puroType, this.ontoUri, this.ruleKey, nameWasChange);
+               this.elSettings = {selectedType: selectedType, puroType: puroType, ruleKey:this.ruleKey, elName:elName, relationEl: relationEl, additionalRule: additionalRule, relType: ""};
                if (relationEl === this.relation.uri.value)
                {
                   
-                 let updateRelTypes = this.updateRelationTypes();
+                 const updateRelTypes = this.updateRelationTypes();
                  if (updateRelTypes !== false)
                  {
                      return updateRelTypes;
@@ -146,12 +139,10 @@ export default class EventController {
             }
             else if(puroType === "dataType")
             {
-                //kolala
                 relationEl = [selectedType, this.ontoUri+elName];
                 this.elSettings.relationEl = relationEl;
-                this.elSettings.relType = "Row"
-                //Ulož DataType do ontoModelu -> pushovat na začátek
-                this.ontoController.addToOntoModel(this.ontoUri+elName,elName,"Datatype","BValue",this.relation.uri,ruleKey);
+                this.elSettings.relType = "Row" // rovná čára mezi elementy 
+                this.ontoController.addToOntoModel(this.ontoUri+elName,elName,"Datatype","BValue",this.relation.uri,this.ruleKey);
             }
             else 
             {
@@ -165,16 +156,14 @@ export default class EventController {
                 }
 
                 selectedType = this.elSettings.selectedType;
-                selectedUri = this.elSettings.selectedUri;
                 puroType = this.elSettings.puroType;
-                ruleKey = this.elSettings.ruleKey;
                 elName = this.elSettings.elName;
                 relationEl = this.elSettings.relationEl;
                 additionalRule = this.elSettings.additionalRule; 
-
-            }
+            } 
             
-            let relationRules = this.getRelationRules(relationEl, relFlow, selectedUri,ruleKey, this.elSettings.selectedType, this.elSettings.relType, elRelTypes);
+          
+            let relationRules = this.getRelationRules(relationEl, relFlow, selectedUri,this.ruleKey, this.elSettings.selectedType, this.elSettings.relType, elRelTypes);
     
             if (relationRules !== true)
             {
@@ -182,45 +171,33 @@ export default class EventController {
                 return Promise.resolve(relationRules); 
             }
 
-            //VALUES CHECK -> pak vrat další větev
-
             if (this.valuationArr !== null)
             {
                 if (this.valuationArr.length > 0)
                 {
-                    let button = [{"name": this.valuationArr[0].el, "uri":this.valuationArr[0].valuation, "origin":ruleKey}];
-                    // create good question 
-                    let question = "Which Datatype represents " + this.delUri(this.valuationArr[0].valuation) + "?"; 
-                    this.valuationArr.shift(); 
-                    return Promise.resolve({"buttons": button , "title": question, "type": "dataType", "elName": true});   
+                    return this.handleValuation; 
                 }
                 else if(this.valuationArr.length === 0)
                 {
-                    return this.nextTreeBranch(ruleKey); 
+                    return this.nextTreeBranch(this.ruleKey); 
                 }
             }
-
             //Přidání do ontomodelu 
-            this.ontoController.addToOntoModel(selectedUri, this.delUri(selectedUri),selectedType,
-            this.delUri(this.selectedEl.type.value),this.relation.uri.value,ruleKey,undefined,undefined,elName);
-            
-
-            
-
+            this.ontoController.addToOntoModel(this.elementUri, this.delUri(this.elementUri),selectedType,
+            this.delUri(this.selectedEl.type.value),this.relation.uri.value,this.ruleKey,undefined,undefined,elName, nameWasChange);
             //zjištění dodatečných pravide 
             if (additionalRule.length > 0)
             {
                 this.selectedEl = this.getNextElement;   
                 console.log(additionalRule);
                 //aditional rule 
-                return Promise.resolve(this.ruleController.ruleSelection(undefined,ruleKey,this.selectedEl,undefined,additionalRule,this.queryTree));
+                return this.ruleController.ruleSelection(undefined,this.ruleKey,this.selectedEl,undefined,additionalRule,this.queryTree);
             }
             else
             {
                 //change selection or step plus
                 //kontrolaElementů na konci
                 // proměná co určuje, že se jedná o kontrolu elementu  
-
                 if (this.elementsWithoutType.length === 0)
                 {
                     this.elementsWithoutType = this.checkElementsInRelationTree(this.relationTree,this.ontoController.getOntoModel());
@@ -228,85 +205,53 @@ export default class EventController {
                 // přiřazení typu neurčeným elementům 
                 if (this.elementsWithoutType.length > 0 && this.withoutTypeIndex < this.elementsWithoutType.length)
                 {
-                    let element = this.getElementByUri(this.elementsWithoutType[this.withoutTypeIndex].uri.value);
+                    const element = this.getElementByUri(this.elementsWithoutType[this.withoutTypeIndex].uri.value);
                     
                     this.withoutTypeIndex ++;
                     
-                    return Promise.resolve(this.ruleController.commonRuleSelection(element, ruleKey,this.ontoController.getOntoModel())); 
+                    this.elementUri = element.uri.value;
+
+                    return this.ruleController.commonRuleSelection(element, this.ruleKey,this.ontoController.getOntoModel()); 
                 }
                 else
                 {
                     if (this.ontoController.getOntoElement(this.relation.uri.value).from === "")
                     {
-                        let lastElUri = this.ontoController.getLastElementUri(this.relation.uri.value);
-                        this.ontoController.updateOntoModel(this.relation.uri.value, ruleKey, lastElUri);
+                        const lastElUri = this.ontoController.getLastElementUri(this.relation.uri.value);
+                        this.ontoController.updateOntoModel(this.relation.uri.value, this.ruleKey, lastElUri);
                     }
                     //projdi všechny elementy a ověř úplnost typů !!!!!!!!!!!!
                     //změnit strany případně nebo skočit na další relation!! jedeme dál..  
                     // this.relator rule.Key pro check elementů
                     
-                    let unfinishedTypes = this.checkElementsConsistency(this.relation.uri.value, ruleKey); 
+                    let unfinishedTypes = this.checkElementsConsistency(this.relation.uri.value, this.ruleKey); 
                     if (unfinishedTypes.length > 0)
                     {
-                
                         // upravit na funkci
-                        
-                        let question = "";
-                        
-                        console.log(unfinishedTypes);
-                        
-                        if ("question" in unfinishedTypes[0].rule)
-                        {
-
-                            for (let q of this.rulesJson.questions)
-                            {
-                                if (q.type === unfinishedTypes[0].rule.question)
-                                {
-                                    question = q.question;
-                                    break;
-                                }
-                            }
-                            
-
-                            question = (question === "") ? unfinishedTypes[0].question : question; 
-                            let qType = (unfinishedTypes[0].key in unfinishedTypes[0].rule) ? unfinishedTypes[0].rule[unfinishedTypes[0].key][0] : unfinishedTypes[0].rule.type[0];
-                            question =  question.replace("VAL", this.delUri(unfinishedTypes[0].element)).replace("TyPe",qType); 
-                        }
-                        else
-                        {
-                            question = "What is " + unfinishedTypes[0].key + " of " + this.delUri(unfinishedTypes[0].element);
-                        }
-
-
-                        let mappedButtons = unfinishedTypes[0].types.map(function (ruleClass) {
-                            return {"name": ruleClass, "uri": unfinishedTypes[0].element, "origin": ruleKey};
-                        }.bind(this));
-
-                        return Promise.resolve({"buttons": mappedButtons, "title": question, type: unfinishedTypes[0].key, "elName": true}); 
-                               
+                       
+                        const question = this.createQuestion(unfinishedTypes[0], this.rulesJson.questions); 
+                        this.elementUri = unfinishedTypes[0].element; 
+                        return this.createButtons(unfinishedTypes[0].types, question, unfinishedTypes[0].key,true);                               
                     }
                     else
                     {
                      
                         //projdi všechny již zvolené elementy v onto modelu a zkontroluj úplnost typů
                         //relsationRuleIndex > 1 => další relation
-
                         
                         if (this.relationRuleIndex > 1)
                         {
                             //další relation!! 
                             this.setIndexexToDefault(); 
-
                             this.relationOrderIndex ++;
-                            
                             if (this.relationOrderIndex === this.relations.length)
                             {
                                 alert("Transformation is comlete!!!");
-                                return Promise.resolve({buttons: [], title: "The End", type: "end"});
+                                return {buttons: [], title: "The End", type: "end"};
                             }
                             else
                             {
-                                return Promise.resolve(this.getDefault());
+                                return this.getDefault();
                             }
                             
                         }
@@ -314,24 +259,18 @@ export default class EventController {
                         //Doplň VALUE 
                         if (this.valuationArr === null)
                         {
-                            this.valuationArr = this.getAllTreeValuations(ruleKey);
+                            this.valuationArr = this.getAllTreeValuations(this.ruleKey);
                             // vrat dotaz na Value
                             if (this.valuationArr.length > 0)
                             {
-                                let question = "Which Datatype represents " + this.delUri(this.valuationArr[0].valuation) + "?";
-                                let button = [{"name": this.valuationArr[0].el, "uri":this.valuationArr[0].valuation, "origin":ruleKey}];
-                                this.valuationArr.shift(); 
-                                return{"buttons": button , "title": question, "type": "dataType", "elName": true};
+                               return this.handleValuation(); 
                             }
                         }
                         //přepnutí na další větev
-                        return this.nextTreeBranch(ruleKey);
+                    
+                        return this.nextTreeBranch();
                     }
                 }
-
-            
-
-
             }
 
         }
@@ -340,24 +279,25 @@ export default class EventController {
 
     updateRelationTypes = () =>
     {
-        let ontoRel = this.ontoController.getOntoElement(this.relation.uri.value);
+        const ontoRel = this.ontoController.getOntoElement(this.relation.uri.value);
         
+
         if (ontoRel.to !== undefined && ontoRel.from !== undefined)
         {
             //koala
             if (ontoRel.ontoType === "Relator" && ontoRel.fromType === undefined)
             {
-                let rule = this.ruleController.getSpecificRule(this.rulesJson[ontoRel.ontoType],"cardinality");
+                const rule = this.ruleController.getSpecificRule(this.rulesJson[ontoRel.ontoType],"cardinality");
                 return this.createRelCardinalityBtn("ontoRelation-save-bRelation-relator-from",rule,"from",ontoRel.from,ontoRel.uri);
             }
             else if (ontoRel.ontoType === "Relator" && ontoRel.toType === undefined) 
             {
-                let rule = this.ruleController.getSpecificRule(this.rulesJson[ontoRel.ontoType],"cardinality");
+                const rule = this.ruleController.getSpecificRule(this.rulesJson[ontoRel.ontoType],"cardinality");
                 return this.createRelCardinalityBtn("ontoRelation-save-bRelation-relator-to",rule,"to",ontoRel.uri,ontoRel.to);
             }
             else if (ontoRel.toType === undefined && ontoRel.fromType === undefined )
             {
-                let rule = this.ruleController.getSpecificRule(this.rulesJson[ontoRel.ontoType],"cardinality");
+                const rule = this.ruleController.getSpecificRule(this.rulesJson[ontoRel.ontoType],"cardinality");
                 return this.createRelCardinalityBtn("ontoRelation-save-bRelation",rule,"to",ontoRel.from,ontoRel.to);
             }
         }
@@ -365,14 +305,22 @@ export default class EventController {
         return false; 
     }
 
-
-    nextTreeBranch = (ruleKey) => 
+    handleValuation = () => 
     {
+        const question = "Which Datatype represents " + this.delUri(this.valuationArr[0].valuation) + "?"; 
+        const buttons = this.createButtons(this.valuationArr[0].el, question, "dataType",true); 
+        this.elementUri = this.valuationArr[0].valuation; 
+        this.valuationArr.shift();
+        return buttons;  
+    }
 
+    nextTreeBranch = () => 
+    {
+      
         if (this.ontoController.getOntoElement(this.relation.uri.value).from === "")
         {
             let lastElUri = this.ontoController.getLastElementUri(this.relation.uri.value);
-            this.ontoController.updateOntoModel(this.relation.uri.value, ruleKey, lastElUri);
+            this.ontoController.updateOntoModel(this.relation.uri.value, this.ruleKey, lastElUri);
         }
         
         this.relationRuleIndex ++; 
@@ -382,8 +330,8 @@ export default class EventController {
         if (this.relationTreeIndex === this.relationTreeArr.length)
         {
        
-            ruleKey = this.relationRuleIndex === 0 ? "from" : "to";
-            relationTypePromise = this.getRelatedElements(this.relation,ruleKey);
+            this.ruleKey = this.relationRuleIndex === 0 ? "from" : "to";
+            relationTypePromise = this.getRelatedElements(this.relation,this.ruleKey );
         }
         else
         {   
@@ -392,7 +340,7 @@ export default class EventController {
 
         return new Promise(resolve => {relationTypePromise.then(function(results) {
             this.valuationArr = null; 
-            resolve (this.handleRelatedElements(results,"nextElement",ruleKey))
+            resolve (this.handleRelatedElements(results,"nextElement",this.ruleKey ))
         }.bind(this));});
     }
 
@@ -432,15 +380,17 @@ export default class EventController {
     
     createRelCardinalityBtn = (type, rule, ruleKey, fromE, toE, relationFlow, elUri) =>
     {
+
         type += (relationFlow === "dataType") ? "-daType" : ""; 
-        let fromB = rule.fromT.map(function (ruleClass) {
+        let fromB = rule.fromT.map(ruleClass => {
             return {"name": ruleClass, "uri":elUri,"origin":ruleKey, direction: "from"};
-            }.bind(this));
+            });
         
-        let toB = rule.fromT.map(function (ruleClass) {
+        let toB = rule.fromT.map(ruleClass => {
             return {"name": ruleClass, "uri":elUri,"origin":ruleKey, direction: "to"};
-        }.bind(this));
+        });
         
+
         return {"buttons": toB.concat(fromB) , "title": "Select cardinality between elements", "type": type, "elName": [this.delUri(fromE), this.delUri(toE)]};
     }
 
@@ -461,7 +411,7 @@ export default class EventController {
         let relationFlow = relType.replace("ontoRelation-", "");
         let rule;
         let relationRules = this.rulesJson.relationRules;  
-       
+        
 
 
 
@@ -514,6 +464,9 @@ export default class EventController {
            let result = rule.offer.map(function (ruleClass) {
             return {"name": ruleClass, "uri":elUri,"origin":ruleKey};
            }.bind(this));
+
+           this.elementUri = elUri;
+
            return {"buttons": result, "title": "Which type of relation is between "+ this.delUri(fromE) +" and " + this.delUri(toE)+"?", "type": "ontoRelation-cardinality"};
 
            // pokud pouze jeden offer aplikuj a zavolej 
@@ -558,9 +511,10 @@ export default class EventController {
         return false; 
     }
 
-    relationWasSelected = (selectedType, ruleKey) => 
+    relationWasSelected = (selectedType) => 
     {
-       
+        
+        this.ruleKey = "from";
         this.relation = this.relations[this.relationOrderIndex];
         this.relationType = selectedType; 
         //selected type do object property
@@ -570,7 +524,7 @@ export default class EventController {
         
         if(this.relationTreeArr.length === this.relationTreeIndex)
         {
-            relationTreePromise = this.getRelatedElements(this.relation,ruleKey);
+            relationTreePromise = this.getRelatedElements(this.relation,this.ruleKey);
         }
         else
         {
@@ -587,8 +541,8 @@ export default class EventController {
 
         
         return new Promise(resolve => {relationTreePromise.then(function(results) {
-
-            resolve (this.handleRelatedElements(results,"relationWasSelected", ruleKey, rule));
+         
+            resolve (this.handleRelatedElements(results,"relationWasSelected", this.ruleKey, rule));
 
          }.bind(this));});
     }
@@ -604,7 +558,7 @@ export default class EventController {
         if (origin === "relationWasSelected")
         {
             this.selectedEl = this.getNextElement();
-            
+        
             //rychlá záplata -> předělat -> už zvolen koko
             let el = this.getElementByUri(this.selectedEl.uri.value)
             let additionalRule = [];
@@ -621,11 +575,12 @@ export default class EventController {
 
             if (additionalRule.length === 0)
             {
-           
+                this.elementUri = this.selectedEl.uri.value;
                 return (this.ruleController.ruleSelection(rule,ruleKey,this.selectedEl,undefined,undefined,this.queryTree));
             }
             else
             {
+             this.elementUri = this.selectedEl.uri.value;
               return (this.ruleController.ruleSelection(undefined,ruleKey,this.selectedEl,undefined,additionalRule,this.queryTree));
             }
         }
@@ -636,6 +591,9 @@ export default class EventController {
             this.selectedEl = this.relationTree[this.relationIndex];
             //počítá se dle délky pole +1!!
             this.relationIndex --;
+    
+            this.elementUri = this.selectedEl.uri.value;
+        
             return (this.ruleController.ruleSelection(rule,ruleKey,this.selectedEl, undefined,undefined,this.queryTree));
         }
 
@@ -701,27 +659,7 @@ export default class EventController {
         return this.rdfController.getRelationBTypes(relation[key].value);    
     }
 
-    delUri = (uri) => 
-    {
-        var result = []; 
-        if (typeof uri === 'string')
-        {
-            return uri.split('#')[1];
-        }
-        else if (Array.isArray(uri))
-        {
-            for(let element of uri)
-            {
-                result.push(element.split('#')[1]);
-            }
-            return result; 
-        }
-        else
-        {
-            return "";
-        }
-        
-    }
+
 
     l = (m2) =>
     {
@@ -732,7 +670,7 @@ export default class EventController {
     
     getNextElement = () =>
     {
-        let ontoModel = this.ontoController.getOntoModel();
+        const ontoModel = this.ontoController.getOntoModel();
         let returnEl;
         if (this.isElementUseless(this.relationTree[this.relationIndex]))
         {
@@ -864,6 +802,16 @@ export default class EventController {
 
         this.elementConsistencyIndex = 0; 
         this.elementConsitencyTree = [];
+
+        this.elementUri = "";
+        this.ruleKey = "";
+        this.type = "";
+
+
+        this.selectedEl = null;
+        this.elSettings = {};
+        // Nový začátek 
+
     }
 }
 

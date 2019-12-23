@@ -2,8 +2,10 @@
   "name": "puro-onto",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://tomiaro.github.io/puro-onto-test/",
   "dependencies": {
     "bootstrap": "^4.3.1",
+    "gh-pages": "^2.1.1",
     "html-react-parser": "^0.10.0",
     "jquery": "^3.4.1",
     "mermaid": "^8.4.4",
@@ -16,6 +18,8 @@
     "yuml-diagram": "^1.1.0"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
