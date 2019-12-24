@@ -5,7 +5,7 @@ export default class MainController{
    
     // orgin lze držet jako property objektu 
     // uri lze držet v property objektu 
-    createButtons = (buttons, title, type, elName, origName = "") => 
+    createButtons (buttons, title, type, elName, origName = "") 
     {
         
         
@@ -19,7 +19,7 @@ export default class MainController{
         return Promise.resolve({buttons: mapButtons, title: title, type: type, elName: elName, originalName: origName}); 
     }
 
-    createQuestion = (unfinnishedType, questions) => 
+    createQuestion (unfinnishedType, questions) 
     {
         let question = "";
                         
@@ -45,7 +45,7 @@ export default class MainController{
     }
    
    
-    delUri = (uri) => 
+    delUri (uri) 
     {
         var result = []; 
         if (typeof uri === 'string')

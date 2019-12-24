@@ -1,6 +1,6 @@
 import { updateExpression } from "@babel/types";
 
-export default class RuleController {
+export default class OntoModelController {
 
 
     constructor ()
@@ -32,7 +32,10 @@ export default class RuleController {
 
         this.ontoModel.push({uri: elUri, label:elLabel, ontoType: ontoType, puroType: elPuroType, fromRelation: relationName, direction: direction, from: from, to:to});
         console.log(this.ontoModel)
-        return true; 
+
+
+
+        return this.ontoModel; 
     }
 
     addRelation = (type, from, to, uri, label, fromType, toType) => 
@@ -40,17 +43,16 @@ export default class RuleController {
         //fromT toT
         this.ontoModel.push({type:"relation",ontoType: type, from:from, to:to,uri:uri, label:label, fromType: fromType, toType: toType});
         
-        return true; 
+        return this.ontoModel; 
     }
 
     updateOntoModel = (elementsUri, property, value) =>
     {
-        
         for (let node of this.ontoModel)
         {
             if (node.uri === elementsUri) {
                 node[property] = value; 
-                return true;
+                return this.ontoModel;
             }
         }
         return false;
@@ -183,7 +185,6 @@ export default class RuleController {
     getRelationElements = (elName, element, selectedUri, relationUri, addRulesLenght, relationRuleIndex, puroType, ontoUri, ruleKey, nameWasChange = false) => 
     {
         
-        
         if (elName !== "" && puroType !== "dataType" && nameWasChange === false)
         {
             let father;
@@ -217,7 +218,7 @@ export default class RuleController {
             
             for (let index = this.ontoModel.length - 1; index >= 0; index --)
             {
-            
+                console.log(this.ontoModel);
                 if (this.ontoModel[index]["fromRelation"] === relationUri)
                 {
                     lastRelElement = this.ontoModel[index];
@@ -243,7 +244,7 @@ export default class RuleController {
             return [elementFather.uri, element.uri.value];
             //this.addRelation("Dodělat závislé na pravidlech", elementFather.uri , element.uri.value);
         }
-  
+        
     }
 
     checkDuplicity = (label) => 
@@ -291,6 +292,12 @@ export default class RuleController {
         return types; 
     }
 
+    undo (ontoModelHistory)
+    {
+        
+        this.ontoModel =  JSON.parse(JSON.stringify(ontoModelHistory));  
+   
+    }
 
 
 

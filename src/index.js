@@ -7,6 +7,9 @@ import $ from 'jquery';
 import mermaid from "mermaid";
 import EventController from './controllers/EventController.js'; 
 
+
+
+
 //import RdfController from './controllers/RdfController.js';
 //import { thisTypeAnnotation } from "@babel/types";
 
@@ -114,9 +117,19 @@ class QuestionPart extends React.Component {
     });
     
   }
+  
+  undoClick = () =>
+  {
+
+
+
+  }
 
   handleClick = (selectedType, selectedUri, type) => {
      let elName = this.state.elName;
+     let undo = false;
+
+
      if (elName === "" && this.state.changeName === true)
      {
        alert("Plese write name of the element!");
@@ -124,6 +137,22 @@ class QuestionPart extends React.Component {
      else
      {
 
+
+        if (type === "Undo")
+        {
+         
+          const history = this.eventController.undo(); 
+
+          const inputVariables = history.inputVariables;
+          selectedType = inputVariables[0];
+          selectedUri = inputVariables[1];
+          type =  inputVariables[2];
+          elName = inputVariables[3] 
+          this.setState({nameWasChange: inputVariables[4] });
+          console.log(history.properties)
+
+          undo = true;
+        }
         elName = elName.replace(/\s/g, '_');
         
         if (elName !== "" && this.state.changeName === true && !this.eventController.checkDuplicity(elName))
@@ -132,7 +161,27 @@ class QuestionPart extends React.Component {
         }
         else
         {
+          
           this.eventController.nextElement(selectedType,selectedUri,type, elName, this.state.nameWasChange).then(results => {
+            
+            if (undo === false)
+            {
+              let properties = (Object.getOwnPropertyNames(this.eventController));
+              let historyRecord = {}; 
+              for (let prop of properties)
+              {
+                 if (!prop.includes("Controller") && prop !== "rulesJson" && prop !== "queryTree" && prop !== "relations")
+                 {
+                    if (typeof prop !== 'function')
+                    {
+                      historyRecord[prop] = this.assignProp(this.eventController[prop])
+                    }    
+                 }
+              }
+              console.log(historyRecord)
+              this.eventController.saveHistory(historyRecord, [selectedType,selectedUri,type, elName, this.state.nameWasChange]);
+            }
+
             let svg = this.eventController.getGraphSvg(); 
             this.setState({buttons: results.buttons,type: results.type, title: results.title, elName: "", changeName: results.elName, originalName: results.originalName});      
             
@@ -148,6 +197,19 @@ class QuestionPart extends React.Component {
 
 
 
+  assignProp = (prop) => {
+
+    if (Array.isArray(prop) || typeof prop === 'object')
+    {
+     //how to 
+     return JSON.parse(JSON.stringify(prop));
+    }
+    else
+    {
+      return prop; 
+    }
+
+  }
 
   createGraph = (chart) => {
 
@@ -194,7 +256,7 @@ class QuestionPart extends React.Component {
           </div>
          <div className = "text-right col-md-6 mx-auto divLowBtn"> 
           <button type = "button" className= {this.state.originalName === "" || this.state.type.includes("ontoRelation") ? "d-none" : "btn btn-primary btnModal" } onClick = {this.handleChangeName} >{this.state.changeName === true ? "Set original name" : "Change name"}</button>
-          <button type = "button" className="btn btn-primary btnModal" onClick = {(() => alert("Will be implemented!"))}>Undo</button>
+          <button type = "button" className="btn btn-primary btnModal" onClick = {() => this.handleClick(undefined,undefined,"Undo")}>Undo</button>
           <button type="button" className="btn btn-secondary btnModal" data-dismiss="modal">Cancel</button>
          </div>
          </div>
