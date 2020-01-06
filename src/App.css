@@ -20,7 +20,6 @@
 .App-link {
   color: #09d3ac;
 }
-
 .divLowBtn {margin-top: 60px;}
 .transformWindow {height: 300px;
   position: relative;
@@ -29,9 +28,13 @@
   overflow-x: auto;
   
 }
+.toolBtn {margin-left: 14px; height: 25px; margin-top: 1px; text-align: center; position: absolute;padding:0;}
+.TransformComponent-module_container__3NwNd {width: 100% !important;}
+.react-transform-element {width: 100% !important;}
 .btnModal {margin: 2px;}
 .inputName {margin-bottom: 15px;}
 .questionPart {margin-top: 30px; max-width: 75%;}
 .cardinalitySelect {text-align-last:center;}
 .container {max-width: 100%;}
-
+.optionButtons {position: absolute; margin-left: 50px;   left: 65%; }
+.changeAlert {margin-top: 15px; display: none;}

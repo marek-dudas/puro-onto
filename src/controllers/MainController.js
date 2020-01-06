@@ -19,27 +19,28 @@ export default class MainController{
         return Promise.resolve({buttons: mapButtons, title: title, type: type, elName: elName, originalName: origName}); 
     }
 
-    createQuestion (unfinnishedType, questions) 
+    createQuestion (unfinishedType, questions) 
     {
         let question = "";
-                        
-        if ("question" in unfinnishedType)
+        if ("question" in unfinishedType.rule)
         {
             for (let q of questions)
             {
-                if (q.type === unfinnishedType.question)
+                
+                if (q.type === unfinishedType.rule.question)
                 {
-                    return q.question;
+                    question = q.question;
+                    break;
                     
                 }
             }
-            question = (question === "") ? unfinnishedType.question : question; 
-            let qType = (unfinnishedType.key in unfinnishedType.rule) ? unfinnishedType.rule[unfinnishedType.key][0] : unfinnishedType.rule.type[0];
-            return question.replace("VAL", this.delUri(unfinnishedType.element)).replace("TyPe",qType); 
+            question = (question === "") ? unfinishedType.rule.question : question; 
+            let qType = (unfinishedType.key in unfinishedType.rule) ? unfinishedType.rule[unfinishedType.key][0] : unfinishedType.rule.type[0];
+            return question.replace("VAL", this.delUri(unfinishedType.element)).replace("TYPE",qType); 
         }
         else
         {
-            return "What is " + unfinnishedType.key + " of " + this.delUri(unfinnishedType.element);
+            return "What is " + unfinishedType.key + " of " + this.delUri(unfinishedType.element)+"?";
         }
 
     }

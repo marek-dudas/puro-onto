@@ -12,6 +12,7 @@ export default class RuleController extends MainController {
     //ruleSelection queryTree, 
     ruleSelection = (rules, key, element, ontoType, rule, queryTree) => 
     {
+        
         let commands; 
         let additionalRules;
         let offerTypes;
@@ -44,7 +45,6 @@ export default class RuleController extends MainController {
             }
             else
             {
-                
                 needElName = false;
                 uri = element.uri.value;
                 question = this.rulesJson.questions[0].question.replace("VAL",element.label.value);
@@ -53,10 +53,11 @@ export default class RuleController extends MainController {
         }
         else
         {
+            
             uri = false; 
             question = rules.questions[2].question;
         }
-  
+       
         return this.createButtons(offerTypes,question, "classSelection",needElName,elName);
     }
 
@@ -216,15 +217,14 @@ export default class RuleController extends MainController {
 
         // tohle vyřeš na úrovni onto modelu!
         let fatherOnto = [];
-        let childOnto = [];
-        let connection = 0;
-        if (element.connect !== null)
-        {
-            connection = element.connect.length + element.connectFrom.length; 
-        }
+        let childPuroType = [];
+        const connection =  element.connect.length > 0 ? true : false;  
    
-        var fatherPuro =  this.delUri(element.fatherType);
-        var childPuro =   this.delUri(element.childType);
+        for (let child of element.childType)
+        {
+            childPuroType.push(this.delUri(child));
+        }
+
         
         for (let node of ontoModel)
         {
@@ -233,26 +233,25 @@ export default class RuleController extends MainController {
             }
             
         }
-        
+  
         // Změnit!! 
         for (var rule of this.rulesJson.commonRules)
         {
-            
+
             /*if ((fatherOnto.includes(rule.fatherOnto) || (fatherOnto.length === 0 && rule.fatherOnto === "")) &&
                 (fatherPuro.includes(rule.fatherPuro) || (fatherPuro.length === 0 && rule.fatherPuro === "")) &&
                 childPuro.includes(rule.childPuro) || childPuro === rule.childPuro &&
                 rule.hasRelation <= connection
                 )
             */
-            if(true)
+           if ((fatherOnto.some(r=> rule.fatherOnto.includes(r)) || (rule.fatherOnto.includes("none"))) &&
+            (connection === rule.connection || rule.connection === 0) && (element.childType.some(r=> rule.childPuro.includes(r) || 
+            (rule.childPuro.includes("none"))) 
+           ))
             {
-                for(let val of rule.offer) 
-                { 
-                    //question atd...
-                    result.push(this.rulesJson.classes[val]); 
-                }
 
-                return this.createButtons(result,element.label.value, "elementSelection",false, element.label.value);
+                const question = "Which type is "+element.label.value+"?";
+                return this.createButtons(rule.offer,question, "elementSelection",false, element.label.value);
             }
         }
     }

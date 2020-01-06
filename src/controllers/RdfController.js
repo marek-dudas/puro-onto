@@ -61,7 +61,7 @@ export default class RdfController {
 
     findBTypeRelation =  (fatherElement, returnArr,endCall) => 
     {
-           
+            
             var elementsUri = fatherElement.uri.value;
             var query = `
              PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
@@ -79,17 +79,16 @@ export default class RdfController {
                 
                 var checkArr = []; 
                 var connect = [];
-
+               
                 result = this.deleteDuplicity(result, ["connect", "connectFrom", "father", "fatherType","fatherTypeRelation","child","childType","childRel"]);
         
                 if (result.length > 0)
                 {
                     // otestovat jak funguje v případě dvou 
+                    
                     for (let i in result) {
-                        console.log(result)
                         returnArr.push(result[i]);
                         this.findBTypeRelation(result[i],returnArr,endCall);
-                    
                     }
                 }
                 else
@@ -129,14 +128,15 @@ export default class RdfController {
                      BIND ( <`+elementsUri+`>  AS ?father)
                  }`;
                 this.sparqlQuery(query, function callback(result) {  
-                    
+               
                     var checkArr = []; 
                     var connect = [];
 
                     result = this.deleteDuplicity(result, ["connect","connectFrom", "father", "fatherType","fatherTypeRelation","child","childType","childRel","valuation"]);
-            
+                  
                     if (result.length > 0)
                     {
+                    
                         // otestovat jak funguje v případě dvou 
                         for (let i in result) {
                             returnArr.push(result[i]);
@@ -147,6 +147,7 @@ export default class RdfController {
                     else
                     {
                         //POZOR MUZE BYT CHYB kvuli opakovani
+                      
                         endCall(returnArr);
                         return returnArr;
                     }
@@ -179,6 +180,7 @@ export default class RdfController {
                   this.sparqlQuery(query, function callback(result) {
                       
                       result.forEach(function(node) {
+                            
                             node.father = [];
                             node.fatherType = [];
                             node.fatherTypeRelation = [];
@@ -261,7 +263,7 @@ export default class RdfController {
             }; 
 
 
-
+     
             //from nebo to poslat si ukazatel? 
             getRelationBTypes = (relationUri) => 
             {
@@ -280,14 +282,14 @@ export default class RdfController {
 
                  return new Promise(resolve => {
                     // instance může mít mnohem více dětí!!!! zaměř se na to a dej si na to pozor!!!
-                    this.sparqlQuery(query, function callback(result) {
+                    this.sparqlQuery(query, (result) => {
                         
                         // result.push({uri: {token:"uri", value: relationUri}});
                         
                         this.recursiveFindChild(0,result,[], function lastCall(lastResult){
                                resolve(lastResult);
                        },"relation");
-                   }.bind(this));
+                   });
                 });
 
 

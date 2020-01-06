@@ -1,0 +1,37 @@
+<rdf:RDF xmlns:rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:puro="http://lod2-dev.vse.cz/ontology/puro#" xmlns:pm="http://lod2-dev.vse.cz/data/puromodels#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+	<puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Food">
+		<rdfs:label>Food</rdfs:label>
+		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+		<puro:rigid>true</puro:rigid>
+	</puro:BType>
+	<puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Dish">
+		<rdfs:label>Dish</rdfs:label>
+		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+		<puro:rigid>true</puro:rigid>
+		<puro:subTypeOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Food"/>
+	</puro:BType>
+	<puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#boiledEgg">
+		<rdfs:label>boiledEgg</rdfs:label>
+		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+		<puro:rigid>true</puro:rigid>
+		<puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Dish"/>
+		<puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#ingredient"/>
+	</puro:BType>
+	<puro:BRelation rdf:about="http://lod2-dev.vse.cz/data/puromodels#ingredient">
+		<rdfs:label>ingredient</rdfs:label>
+		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+		<puro:rigid>true</puro:rigid>
+		<puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#egg"/>
+	</puro:BRelation>
+	<puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#egg">
+		<rdfs:label>egg</rdfs:label>
+		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+		<puro:rigid>true</puro:rigid>
+		<puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#IngredientType"/>
+	</puro:BType>
+	<puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#IngredientType">
+		<rdfs:label>IngredientType</rdfs:label>
+		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+		<puro:rigid>true</puro:rigid>
+	</puro:BType>
+</rdf:RDF>

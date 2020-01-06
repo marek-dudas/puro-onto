@@ -154,6 +154,10 @@ export default class OntoModelController {
                 uri = this.ontoModel[i].uri;
                 return uri; 
             }
+            else if(origin === undefined)
+            {
+                return this.ontoModel[i].uri;
+            }
             
         }
 
@@ -205,7 +209,6 @@ export default class OntoModelController {
                 father = element.father[0];
                 passEl = ontoUri + elName; 
             }
-            
             return [father, passEl];
 
         }
@@ -240,10 +243,12 @@ export default class OntoModelController {
         else if (puroType === "elementSelection")
         {   
             //father může být pole.. předělat!!!
-            let elementFather = this.ontoController.getOntoElement(element.father[0]);
+            let elementFather = this.getOntoElement(element.father[0]);
             return [elementFather.uri, element.uri.value];
             //this.addRelation("Dodělat závislé na pravidlech", elementFather.uri , element.uri.value);
         }
+
+       
         
     }
 

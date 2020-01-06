@@ -6,6 +6,9 @@ import './App.css';
 import $ from 'jquery';
 import mermaid from "mermaid";
 import EventController from './controllers/EventController.js'; 
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+
+
 
 
 
@@ -20,17 +23,18 @@ class Layout extends React.Component {
     this.state = {
       svg: ""  
     };
-
+    
 
     this.eventController = new EventController();
     mermaid.initialize({
       startOnLoad: false,
-      //themeCSS: 'g.classGroup text { font-size: 40px; }',
+       themeCSS: '#extensionEnd { fill: white; }',
         });
   }
 
   createGraph = (svg) =>
   {
+
     this.setState({svg: svg});
   }
 
@@ -44,13 +48,30 @@ class Layout extends React.Component {
                 <img src={require('./model.PNG')} className = "img-fluid"  alt="puro-model"/>
             </div>
           </div>
+
           <div className="form-group col-md-6" id="graph">
+            
+            <TransformWrapper
+            enablePadding = {false}>
+             {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+          <React.Fragment>
+            <div className="tools">
             <label htmlFor="exampleFormControlTextarea1">Onto model</label>
-            <div className="form-control transformWindow" id="exampleFormControlTextarea1">
-                <Mermaid chart = {this.state.svg}/>
+              <button  className = "toolBtn btn-sm btn-light" onClick={resetTransform}>Unzoom</button>
             </div>
-          </div>
+            <TransformComponent>
+            <div dangerouslySetInnerHTML={{__html: this.state.svg}} className="form-control transformWindow" id="exampleFormControlTextarea1"> 
+            </div>
+            </TransformComponent>
+          </React.Fragment>
+        )}
+      
+   
          
+      </TransformWrapper>
+          </div>
+
+
             <QuestionPart graphCreation = {this.createGraph} />
            
         </div>
@@ -63,6 +84,8 @@ class Layout extends React.Component {
   }
 
 }
+
+
 
 class PuroModel extends React.Component {
 
@@ -82,7 +105,7 @@ class PuroModel extends React.Component {
 class Mermaid extends React.Component {
  
   render() {
-    return <div dangerouslySetInnerHTML={{__html: this.props.chart}}></div>;
+    return <div className dangerouslySetInnerHTML={{__html: this.props.chart}}></div>;
   }
 }
 
@@ -94,7 +117,7 @@ class QuestionPart extends React.Component {
     super(props);
     this.state = {
     startTransform: true, originalName: "", nameWasChange: false,  
-    buttons: [], changeName: false, elName: "", type: ""};
+    buttons: [], changeName: false, elName: "", type: "", undoActive: false, svg: ""};
     
     this.eventController = new EventController();
   }
@@ -104,16 +127,18 @@ class QuestionPart extends React.Component {
   }
 
   handleSubmit = (event) => {
-    event.preventDefault(); 
+    if (event !== undefined)
+    {
+      event.preventDefault(); 
+    }
     
-    /*
-    window.addEventListener('unhandledrejection', function(event) {
-      alert("Rule is not defined!\nOnly the first answer is correct! \nRules are not complete yet!\nPage will be reloaded!");
-      window.location.reload(); 
-     });
-    */
+    //window.addEventListener('unhandledrejection', function(event) {
+       //alert("Rule is not defined!\nOnly the first answer is correct! \nRules are not complete yet!\nPage will be reloaded!");
+       //window.location.reload(); 
+    //});
+     
       this.eventController.getDefault().then(results => {
-      this.setState({buttons: results.buttons, title: results.title, originalName: results.originalName, type: results.type, startTransform: false});
+      this.setState({undoActive: false, svgUrl: "",buttons: results.buttons, title: results.title, originalName: results.originalName, type: results.type, startTransform: false});
     });
     
   }
@@ -125,33 +150,50 @@ class QuestionPart extends React.Component {
 
   }
 
+ 
+  
+
   handleClick = (selectedType, selectedUri, type) => {
      let elName = this.state.elName;
      let undo = false;
+     let setState = true;
+     let nameWasChange = this.state.nameWasChange;
 
-
-     if (elName === "" && this.state.changeName === true)
+     if (elName === "" && this.state.changeName === true && type !== "Undo")
      {
        alert("Plese write name of the element!");
      }
+     else if (elName !== "" && elName.match(/^[A-z]*[<>,.*|]+[A-z]*$/))
+     {
+       alert("Please change the name. It contains forbidden characters!");
+     }
      else
      {
+
+     
 
 
         if (type === "Undo")
         {
          
           const history = this.eventController.undo(); 
+          if (history === false)
+          {
+            this.handleSubmit();
+            setState = false;
+          }
+          else
+          {
+            const inputVariables = history.inputVariables;
+            selectedType = inputVariables[0];
+            selectedUri = inputVariables[1];
+            type =  inputVariables[2];
+            elName = inputVariables[3];  
+            nameWasChange = inputVariables[4];
+  
+            undo = true;
+          }
 
-          const inputVariables = history.inputVariables;
-          selectedType = inputVariables[0];
-          selectedUri = inputVariables[1];
-          type =  inputVariables[2];
-          elName = inputVariables[3] 
-          this.setState({nameWasChange: inputVariables[4] });
-          console.log(history.properties)
-
-          undo = true;
         }
         elName = elName.replace(/\s/g, '_');
         
@@ -159,10 +201,10 @@ class QuestionPart extends React.Component {
         {
           alert("Element already exists! Please choose different name.")
         }
-        else
+        else if (setState === true)
         {
           
-          this.eventController.nextElement(selectedType,selectedUri,type, elName, this.state.nameWasChange).then(results => {
+          this.eventController.nextElement(selectedType,selectedUri,type, elName, nameWasChange).then(results => {
             
             if (undo === false)
             {
@@ -170,7 +212,7 @@ class QuestionPart extends React.Component {
               let historyRecord = {}; 
               for (let prop of properties)
               {
-                 if (!prop.includes("Controller") && prop !== "rulesJson" && prop !== "queryTree" && prop !== "relations")
+                 if (!prop.includes("Controller") && prop !== "rulesJson" && prop !== "relations")
                  {
                     if (typeof prop !== 'function')
                     {
@@ -178,16 +220,21 @@ class QuestionPart extends React.Component {
                     }    
                  }
               }
-              console.log(historyRecord)
+
               this.eventController.saveHistory(historyRecord, [selectedType,selectedUri,type, elName, this.state.nameWasChange]);
             }
 
             let svg = this.eventController.getGraphSvg(); 
-            this.setState({buttons: results.buttons,type: results.type, title: results.title, elName: "", changeName: results.elName, originalName: results.originalName});      
+            this.setState({buttons: results.buttons,type: results.type, title: results.title,undoActive: true,elName: "", changeName: results.elName, originalName: results.originalName, nameWasChange:false});      
             
             if (svg !== false)
             {
               this.createGraph(svg);
+            }
+
+            if(this.state.type.includes("end"))
+            {
+              this.handleDownloadImage();
             }
             
           });
@@ -214,6 +261,7 @@ class QuestionPart extends React.Component {
   createGraph = (chart) => {
 
       const cb = svg => {  
+        this.setState({svg:svg});
         this.props.graphCreation(svg);
       
       };
@@ -226,12 +274,24 @@ class QuestionPart extends React.Component {
     this.setState({changeName: !this.state.changeName});
     if (this.state.changeName === true)
     {
-      this.setState({elName: this.state.originalName, nameWasChange: false});
+      this.setState({elName: "", nameWasChange: false});
+      $(".changeAlert").fadeTo(1400, 500).slideUp(500, function(){
+        $(".changeAlert").alert('fade');
+       });
     }
     else
     {
       this.setState({elName: "", nameWasChange : true});
+
     }
+  }
+
+  handleDownloadImage = () => 
+  { 
+    const svgBlob = new Blob([this.state.svg], {type:"image/svg+xml;charset=utf-8"});
+    const svgUrl = URL.createObjectURL(svgBlob);
+    this.setState({svgUrl: svgUrl});
+  
   }
 
   render() {
@@ -242,6 +302,13 @@ class QuestionPart extends React.Component {
           </button>
         <div className = {this.state.startTransform ? "d-none" : ""}>
         <h3>{this.state.title}</h3>
+        <div className = "optionButtons d-none d-md-block">
+        <div className = "btn-group-vertical text-right"> 
+          <button  type = "button" className =  "btn btn-primary btnModal"   onClick = {this.handleChangeName} disabled = {this.state.originalName === "" || this.state.type.includes("ontoRelation") || this.state.type.includes("end")}>{this.state.changeName === true && this.state.originalName !== "" ? "Set original name" : "Change name"}</button>
+          <button type = "button" className="btn btn-primary btnModal" onClick = {() => this.handleClick(undefined,undefined,"Undo")} disabled = {!this.state.undoActive}>Undo</button>
+          <button type="button" className="btn btn-secondary btnModal" data-dismiss="modal" onClick={(e) => { if (window.confirm('Are you sure you want to cancel the transformation?')) window.location.reload(); } }>Cancel</button>
+        </div>
+        </div>
         <div className =  {this.state.changeName === true ? 'col-md-6 mx-auto' : 'd-none'}>
                 <div className = "input-group inputName">
                       <div className="input-group-prepend">
@@ -250,29 +317,27 @@ class QuestionPart extends React.Component {
                       <input placeholder = {this.state.originalName === "" ? "Write name of the element!" : this.state.orginalName}    type="text" className="form-control" onChange = {this.handleChange}  value = {this.state.elName}></input>
                   </div> 
               <h5 className = {this.state.buttons.lenght > 1 ? "text-center inputName" : "d-none"}>Select element's class:</h5>  
-              </div>
-          <div className = "divButtons text-center">
-            <ModalButtons  buttons={this.state.buttons} onClick = {this.handleClick} type = {this.state.type} elNames = {this.state.changeName} />
-          </div>
-         <div className = "text-right col-md-6 mx-auto divLowBtn"> 
-          <button type = "button" className= {this.state.originalName === "" || this.state.type.includes("ontoRelation") ? "d-none" : "btn btn-primary btnModal" } onClick = {this.handleChangeName} >{this.state.changeName === true ? "Set original name" : "Change name"}</button>
-          <button type = "button" className="btn btn-primary btnModal" onClick = {() => this.handleClick(undefined,undefined,"Undo")}>Undo</button>
-          <button type="button" className="btn btn-secondary btnModal" data-dismiss="modal">Cancel</button>
-         </div>
-         </div>
+        </div>
+        <div className = "divButtons text-center">
+            <ModalButtons  buttons={this.state.buttons} svgUrl = {this.state.svgUrl} onClick = {this.handleClick} type = {this.state.type} elNames = {this.state.changeName} originalName = {this.state.originalName}/>
+        </div>
+        <div class="alert alert-success col-md-6 mx-auto changeAlert"  role="alert">
+         Original name of the element was set!
+        </div>
+        </div>
       </div>
     );
   }
 
 }
 
-
-
 class ModalButtons extends React.Component {
   constructor(props) {
     super(props);
     this.refs = React.createRef();
   }
+
+
 
   render() {
     if (this.props.type.includes("ontoRelation-save"))
@@ -305,17 +370,17 @@ class ModalButtons extends React.Component {
     {
       return (
         <div className = "col-md-5 mx-auto">
-         <button className = "btn btn-success" >Download Onto-UML graph</button>
+         <a className = "btn btn-success" href = {this.props.svgUrl} download = "ontoUml-graph.svg">Download Onto-UML graph</a>
         </div>
       ); 
     }
     else
     {
       return (
-      <div className="row col-md-5 mx-auto">
+      <div className="row col-md-6 mx-auto">
       {this.props.buttons.map((value) => {
         return  <div className = "col-md-4 mx-auto">
-                      <button key = {this.props.uri} type="button"  className="btn btn-success btnModal" onClick = {() => this.props.onClick(value.name, value.uri, this.props.type, value.origin)} >{(this.props.type.includes("dataType") ) ? "Next" : value.name}</button>
+                      <button key = {this.props.uri} type="button"  className="btn btn-success btnModal" onClick = {() => this.props.onClick(value.name, value.uri, this.props.type, value.origin)} >{(this.props.type.includes("dataType") || ( this.props.originalName === "" && this.props.buttons.length === 1)) ? "Next" : value.name}</button>
                 </div>
       })}
      </div>

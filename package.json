@@ -14,8 +14,13 @@
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
     "react-html-parser": "^2.0.2",
+    "react-pan-zoom-element": "^2.0.1",
     "react-scripts": "3.2.0",
-    "yuml-diagram": "^1.1.0"
+    "react-svg-pan-zoom": "^3.7.1",
+    "react-zoom-pan-pinch": "^1.4.5",
+    "svg-pan-zoom": "^3.6.1",
+    "yuml-diagram": "^1.1.0",
+    "zoomooz": "^1.0.0"
   },
   "scripts": {
     "predeploy": "npm run build",
