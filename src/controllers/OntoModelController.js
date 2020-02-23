@@ -1,15 +1,16 @@
-import { updateExpression } from "@babel/types";
+import MainController from "./MainController";
 
-export default class OntoModelController {
+export default class OntoModelController extends MainController {
 
 
     constructor ()
     {
+        super();
         this.ontoModel  = []; 
     } 
   
     
-    addToOntoModel = (uri, label, ontoType, puroType, relationName, direction,from, to, elName, nameWasChange = false) => 
+    addToOntoModel = (uri, label, ontoType, puroType, relationName, direction,from, to, elName, nameWasChange = false, ontoUri) => 
     {
     
        
@@ -21,7 +22,7 @@ export default class OntoModelController {
         {
             elPuroType = false;
             elLabel = elName;
-            elUri = "http://lod2-dev.vse.cz/data/ontomodels#" + elName; 
+            elUri = ontoUri + elName; 
         }
         else
         {
@@ -30,7 +31,7 @@ export default class OntoModelController {
             elUri = uri; 
         }
 
-        this.ontoModel.push({uri: elUri, label:elLabel, ontoType: ontoType, puroType: elPuroType, fromRelation: relationName, direction: direction, from: from, to:to});
+        this.ontoModel.push({uri: elUri, label:elLabel, ontoType: ontoType, puroType: elPuroType, fromRelation: [relationName], direction: [direction], from: from, to:to,type:"Class"});
         console.log(this.ontoModel)
 
 
@@ -38,10 +39,13 @@ export default class OntoModelController {
         return this.ontoModel; 
     }
 
-    addRelation = (type, from, to, uri, label, fromType, toType) => 
+
+
+    addRelation = (type, from, to, uri,label, fromType, toType) => 
     {
         //fromT toT
-        this.ontoModel.push({type:"relation",ontoType: type, from:from, to:to,uri:uri, label:label, fromType: fromType, toType: toType});
+        uri = uri === undefined ? this.ontoUri.slice(0,-1) + "/relation/"+type+"/"+this.delUri(from)+this.delUri(to) : uri; 
+        this.ontoModel.push({type:"relation",ontoType: type, from:from, to:to,uri:uri, label:label, fromType: fromType, toType: toType, fromRelation: []});
         
         return this.ontoModel; 
     }
@@ -58,6 +62,23 @@ export default class OntoModelController {
         return false;
     }
 
+    addToProperty (uri, property, value)
+    {
+        for (let node of this.ontoModel)
+        {
+            if (node.uri === uri)
+            {
+                 
+                if (Array.isArray(node[property]))
+                {
+                    node[property].push(value); 
+                    return true; 
+                }
+            }
+        }
+        return false; 
+    }
+
     getOntoModel = () =>
     {
         return this.ontoModel; 
@@ -65,7 +86,8 @@ export default class OntoModelController {
     
     getElementsRelation = (uri, direction) =>
     {
-      
+        
+       
         let returnArr = []; 
 
         for (let node of this.ontoModel)
@@ -103,18 +125,17 @@ export default class OntoModelController {
 
     }
 
-    getElementsByOntoType = (type) => 
+    getElementsByOntoType = (type, origin) => 
     {
        let result = [];
 
        for (let node of this.ontoModel)
        {
-            if (type === node.ontoType)
-            {
+            if (type === node.ontoType && (origin === undefined || node.fromRelation.includes(origin)))
+            {  
                 result.push(node.uri);
             }
        }
-
        return result; 
 
     }
@@ -144,24 +165,39 @@ export default class OntoModelController {
        return false; 
     }
 
-    getLastElementUri = (origin) => 
+    
+
+    getLastElementUri = (origin, direction) => 
     {
         var uri; 
         for (let i = this.ontoModel.length - 1; i >= 0; i--) 
         {
-            if (this.ontoModel[i].fromRelation === origin)
-            {
-                uri = this.ontoModel[i].uri;
-                return uri; 
+
+            for (let j = 0; j < this.ontoModel[i].fromRelation.length; j++) {
+                if (this.ontoModel[i].fromRelation[j] === origin && this.ontoModel[i].direction[j] === direction)
+                {
+                    uri = this.ontoModel[i].uri;
+                    return uri;
+                }
+                else if (this.ontoModel[i].fromRelation[j] === origin && direction === undefined)
+                {
+                    uri = this.ontoModel[i].uri;
+                    return uri; 
+                }
+                else if(origin === undefined && direction === undefined)
+                {
+                    return this.ontoModel[i].uri;
+                }
             }
-            else if(origin === undefined)
-            {
-                return this.ontoModel[i].uri;
-            }
-            
         }
 
         return false; 
+    }
+
+    getLastElement = (origin) =>
+    {
+        const uri = this.getLastElementUri(origin);
+        return this.getOntoElement(uri); 
     }
 
     getFatherOntoType = (element) => 
@@ -186,14 +222,14 @@ export default class OntoModelController {
         return result;
     }
 
-    getRelationElements = (elName, element, selectedUri, relationUri, addRulesLenght, relationRuleIndex, puroType, ontoUri, ruleKey, nameWasChange = false) => 
+    getRelationElements = (elName, element, selectedUri, relationUri, addRulesLenght, lastEl, puroType, ontoUri, ruleKey, nameWasChange = false, prevElement) => 
     {
-        
-        if (elName !== "" && puroType !== "dataType" && nameWasChange === false)
+
+        if (elName !== "" && puroType !== "dataType" && nameWasChange === false && element !== false)
         {
             let father;
             let passEl; 
-
+            
             if (puroType === "superType")
             {
                 father = ontoUri + elName;
@@ -206,49 +242,51 @@ export default class OntoModelController {
             }
             else
             {
-                father = element.father[0];
+                
+                father = element.father[0] === undefined ? element.uri.value : element.father[0];
                 passEl = ontoUri + elName; 
             }
             return [father, passEl];
 
         }
-        else if( relationRuleIndex === 2 && addRulesLenght === 0)
+        else if (puroType === "elementSelection")
+        {   
+            
+            //father může být pole.. předělat!!!
+            let elementFather = this.getOntoElement(element.father[0]);
+            return [elementFather.uri, element.uri.value];
+            //this.addRelation("Dodělat závislé na pravidlech", elementFather.uri , element.uri.value);
+        }
+        //relationRule zrušit addRuleTakyZrušit 
+        else if((addRulesLenght === 0 && lastEl === true) || element === false )
         {
-            
-            
-            let lastRelElement;
-            let passEl = (selectedUri === false) ? ontoUri + elName : selectedUri;
-            
+           
+            let lastRelElement = null;
+            let passEl = (element === false) ? ontoUri + elName : selectedUri;
             for (let index = this.ontoModel.length - 1; index >= 0; index --)
             {
-                console.log(this.ontoModel);
-                if (this.ontoModel[index]["fromRelation"] === relationUri)
+                if (this.ontoModel[index]["fromRelation"].includes(relationUri))
                 {
                     lastRelElement = this.ontoModel[index];
                     break;
                 }
             }
             
-            if (lastRelElement.direction !== ruleKey && lastRelElement.fromRelation === relationUri)
+
+            if (lastRelElement !== null && lastRelElement.direction[lastRelElement.direction.length - 1] !== ruleKey && lastRelElement.fromRelation.includes(relationUri) && addRulesLenght === 0)
             {
+
                 this.updateOntoModel(relationUri,ruleKey,passEl);
                 return relationUri; 
             }
-            else
+            else if (element === false || lastRelElement !== null)
             {
                 return [lastRelElement.uri, passEl];
             }
             
         }  
-        else if (puroType === "elementSelection")
-        {   
-            //father může být pole.. předělat!!!
-            let elementFather = this.getOntoElement(element.father[0]);
-            return [elementFather.uri, element.uri.value];
-            //this.addRelation("Dodělat závislé na pravidlech", elementFather.uri , element.uri.value);
-        }
 
-       
+
         
     }
 

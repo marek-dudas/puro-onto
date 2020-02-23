@@ -4,9 +4,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import './App.css';
 import $ from 'jquery';
+import fileDownload from 'js-file-download';
 import mermaid from "mermaid";
 import EventController from './controllers/EventController.js'; 
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+
 
 
 
@@ -44,9 +46,11 @@ class Layout extends React.Component {
         <div className="row">
         <div className="form-group col-md-6" id="graph">
             <label htmlFor="exampleFormControlTextarea1">Puro model</label>
+          
             <div className="form-control  transformWindow embed-responsive" id="exampleFormControlTextarea1">
                 <img src={require('./model.PNG')} className = "img-fluid"  alt="puro-model"/>
             </div>
+            
           </div>
 
           <div className="form-group col-md-6" id="graph">
@@ -59,10 +63,12 @@ class Layout extends React.Component {
             <label htmlFor="exampleFormControlTextarea1">Onto model</label>
               <button  className = "toolBtn btn-sm btn-light" onClick={resetTransform}>Unzoom</button>
             </div>
+            <div className = "border">
             <TransformComponent>
-            <div dangerouslySetInnerHTML={{__html: this.state.svg}} className="form-control transformWindow" id="exampleFormControlTextarea1"> 
+            <div dangerouslySetInnerHTML={{__html: this.state.svg}} className="transformWindow" id="exampleFormControlTextarea1"> 
             </div>
             </TransformComponent>
+            </div>
           </React.Fragment>
         )}
       
@@ -169,10 +175,6 @@ class QuestionPart extends React.Component {
      }
      else
      {
-
-     
-
-
         if (type === "Undo")
         {
          
@@ -271,6 +273,8 @@ class QuestionPart extends React.Component {
   }
 
   handleChangeName = () => {
+
+
     this.setState({changeName: !this.state.changeName});
     if (this.state.changeName === true)
     {
@@ -294,6 +298,12 @@ class QuestionPart extends React.Component {
   
   }
 
+  handleDownloadSchema = () =>
+  {
+    const ontoSchema = JSON.stringify(this.eventController.getOntoSchema()); 
+    fileDownload(ontoSchema, 'ontoSchema.json');
+  }
+
   render() {
     return(
       <div className = "container-fluid text-center questionPart">
@@ -314,12 +324,12 @@ class QuestionPart extends React.Component {
                       <div className="input-group-prepend">
                         <span className="input-group-text" id="">Name of the element:</span>
                       </div>
-                      <input placeholder = {this.state.originalName === "" ? "Write name of the element!" : this.state.orginalName}    type="text" className="form-control" onChange = {this.handleChange}  value = {this.state.elName}></input>
+                      <input placeholder = {this.state.originalName === "" ? "Write name of the element!" : this.state.originalName}    type="text" className="form-control" onChange = {this.handleChange}  value = {this.state.elName}></input>
                   </div> 
               <h5 className = {this.state.buttons.lenght > 1 ? "text-center inputName" : "d-none"}>Select element's class:</h5>  
         </div>
         <div className = "divButtons text-center">
-            <ModalButtons  buttons={this.state.buttons} svgUrl = {this.state.svgUrl} onClick = {this.handleClick} type = {this.state.type} elNames = {this.state.changeName} originalName = {this.state.originalName}/>
+            <ModalButtons  buttons={this.state.buttons} onClickDownloadSchema = {this.handleDownloadSchema} svgUrl = {this.state.svgUrl} onClick = {this.handleClick} type = {this.state.type} elNames = {this.state.changeName} originalName = {this.state.originalName}/>
         </div>
         <div class="alert alert-success col-md-6 mx-auto changeAlert"  role="alert">
          Original name of the element was set!
@@ -336,7 +346,6 @@ class ModalButtons extends React.Component {
     super(props);
     this.refs = React.createRef();
   }
-
 
 
   render() {
@@ -369,8 +378,9 @@ class ModalButtons extends React.Component {
     else if (this.props.type.includes("end"))
     {
       return (
-        <div className = "col-md-5 mx-auto">
-         <a className = "btn btn-success" href = {this.props.svgUrl} download = "ontoUml-graph.svg">Download Onto-UML graph</a>
+        <div className = "col-md-8 mx-auto">
+          <a className = "btn btn-success btnEnd" href = {this.props.svgUrl} download = "ontoUml-graph.svg">Download Onto-UML graph</a>
+          <button type="button"  className = "btn btn-success btnEnd" onClick = {() => this.props.onClickDownloadSchema()}>Download Onto-Schema</button>
         </div>
       ); 
     }
@@ -380,7 +390,7 @@ class ModalButtons extends React.Component {
       <div className="row col-md-6 mx-auto">
       {this.props.buttons.map((value) => {
         return  <div className = "col-md-4 mx-auto">
-                      <button key = {this.props.uri} type="button"  className="btn btn-success btnModal" onClick = {() => this.props.onClick(value.name, value.uri, this.props.type, value.origin)} >{(this.props.type.includes("dataType") || ( this.props.originalName === "" && this.props.buttons.length === 1)) ? "Next" : value.name}</button>
+                      <button key = {this.props.uri} type="button"  className="btn btn-success btnModal" onClick = {() => this.props.onClick(value.name, value.uri, this.props.type, value.origin)} >{(this.props.type.includes("dataType") || ( this.props.originalName === "" && this.props.buttons.length === 1) || (value.name.toLowerCase() === "relator" &&  this.props.buttons.length === 1)) ? "Next" : value.name}</button>
                 </div>
       })}
      </div>

@@ -1,0 +1,127 @@
+[
+    {
+      "type": "relation",
+      "ontoType": "Characterization",
+      "from": "http://lod2-dev.vse.cz/data/puromodels#Book",
+      "to": "http://lod2-dev.vse.cz/data/puromodels#Topic",
+      "uri": "http://lod2-dev.vse.cz/data/puromodels#has_topic",
+      "label": "has_topic",
+      "fromType": "1",
+      "toType": "1"
+    },
+    {
+      "uri": "http://lod2-dev.vse.cz/data/puromodels#Book",
+      "label": "Book",
+      "ontoType": "Kind",
+      "puroType": "BType",
+      "fromRelation": "http://lod2-dev.vse.cz/data/puromodels#has_topic",
+      "direction": "from"
+    },
+    {
+      "uri": "http://lod2-dev.vse.cz/data/puromodels#Topic",
+      "label": "Topic",
+      "ontoType": "Mode",
+      "puroType": "BType",
+      "fromRelation": "http://lod2-dev.vse.cz/data/puromodels#has_topic",
+      "direction": "to"
+    },
+    {
+      "type": "relation",
+      "ontoType": "Arrow",
+      "from": "http://lod2-dev.vse.cz/data/puromodels#Topic",
+      "to": "http://lod2-dev.vse.cz/data/puromodels#DDC_Topic",
+      "uri": "uriDomyslet",
+      "label": "nazev",
+      "fromType": "",
+      "toType": ""
+    },
+    {
+      "uri": "http://lod2-dev.vse.cz/data/puromodels#DDC_Topic",
+      "label": "DDC_Topic",
+      "ontoType": "Subkind",
+      "puroType": "BType",
+      "fromRelation": "http://lod2-dev.vse.cz/data/puromodels#has_topic",
+      "direction": "to"
+    },
+    {
+      "type": "relation",
+      "ontoType": "Relator",
+      "from": "http://lod2-dev.vse.cz/data/ontomodels#dsad",
+      "to": "http://lod2-dev.vse.cz/data/puromodels#Location",
+      "uri": "http://lod2-dev.vse.cz/data/puromodels#published_in",
+      "label": "published_in",
+      "fromType": [
+        "1",
+        "1"
+      ],
+      "toType": [
+        "1",
+        "1"
+      ]
+    },
+    {
+      "type": "relation",
+      "ontoType": "Arrow",
+      "from": "http://lod2-dev.vse.cz/data/puromodels#Book",
+      "to": "http://lod2-dev.vse.cz/data/ontomodels#dsad",
+      "uri": "uriDomyslet",
+      "label": "nazev",
+      "fromType": "",
+      "toType": ""
+    },
+    {
+      "uri": "http://lod2-dev.vse.cz/data/ontomodels#dsad",
+      "label": "dsad",
+      "ontoType": "Role",
+      "puroType": false,
+      "fromRelation": "http://lod2-dev.vse.cz/data/puromodels#published_in",
+      "direction": "from"
+    },
+    {
+      "uri": "http://lod2-dev.vse.cz/data/ontomodels#dasda",
+      "label": "dasda",
+      "ontoType": "Datatype",
+      "puroType": "BValue",
+      "fromRelation": {
+        "token": "uri",
+        "value": "http://lod2-dev.vse.cz/data/puromodels#published_in"
+      },
+      "direction": "from"
+    },
+    {
+      "type": "relation",
+      "ontoType": "Row",
+      "from": "http://lod2-dev.vse.cz/data/puromodels#published_in",
+      "to": "http://lod2-dev.vse.cz/data/ontomodels#dasda",
+      "uri": "uriDomyslet",
+      "label": "nazev",
+      "fromType": "*",
+      "toType": "*"
+    },
+    {
+      "uri": "http://lod2-dev.vse.cz/data/puromodels#Location",
+      "label": "Location",
+      "ontoType": "Role",
+      "puroType": "BType",
+      "fromRelation": "http://lod2-dev.vse.cz/data/puromodels#published_in",
+      "direction": "to"
+    },
+    {
+      "type": "relation",
+      "ontoType": "Arrow",
+      "from": "http://lod2-dev.vse.cz/data/ontomodels#dasd",
+      "to": "http://lod2-dev.vse.cz/data/puromodels#Location",
+      "uri": "uriDomyslet",
+      "label": "nazev",
+      "fromType": "",
+      "toType": ""
+    },
+    {
+      "uri": "http://lod2-dev.vse.cz/data/ontomodels#dasd",
+      "label": "dasd",
+      "ontoType": "Kind",
+      "puroType": false,
+      "fromRelation": "http://lod2-dev.vse.cz/data/puromodels#published_in",
+      "direction": "to"
+    }
+  ]

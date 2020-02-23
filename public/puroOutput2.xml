@@ -1,37 +1,97 @@
-<rdf:RDF xmlns:rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:puro="http://lod2-dev.vse.cz/ontology/puro#" xmlns:pm="http://lod2-dev.vse.cz/data/puromodels#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
-	<puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Food">
-		<rdfs:label>Food</rdfs:label>
-		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-		<puro:rigid>true</puro:rigid>
-	</puro:BType>
-	<puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Dish">
-		<rdfs:label>Dish</rdfs:label>
-		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-		<puro:rigid>true</puro:rigid>
-		<puro:subTypeOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Food"/>
-	</puro:BType>
-	<puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#boiledEgg">
-		<rdfs:label>boiledEgg</rdfs:label>
-		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-		<puro:rigid>true</puro:rigid>
-		<puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Dish"/>
-		<puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#ingredient"/>
-	</puro:BType>
-	<puro:BRelation rdf:about="http://lod2-dev.vse.cz/data/puromodels#ingredient">
-		<rdfs:label>ingredient</rdfs:label>
-		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-		<puro:rigid>true</puro:rigid>
-		<puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#egg"/>
-	</puro:BRelation>
-	<puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#egg">
-		<rdfs:label>egg</rdfs:label>
-		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-		<puro:rigid>true</puro:rigid>
-		<puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#IngredientType"/>
-	</puro:BType>
-	<puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#IngredientType">
-		<rdfs:label>IngredientType</rdfs:label>
-		<puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-		<puro:rigid>true</puro:rigid>
-	</puro:BType>
+<rdf:RDF
+    xmlns:rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:puro="http://lod2-dev.vse.cz/ontology/puro#"
+    xmlns:pm="http://lod2-dev.vse.cz/data/puromodels#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    
+    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Food">
+        <rdfs:label>Food</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+    </puro:BType>
+    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Dish">
+        <rdfs:label>Dish</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+        <puro:subTypeOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Food"/>
+    </puro:BType>
+    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#boiledEgg">
+        <rdfs:label>boiledEgg</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#fat_12g"/>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#energy_700kcal"/>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#size_100g"/>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#carbs_30g"/>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#ingredient"/>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#fat"/>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#energy"/>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#carbs"/>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#size"/>
+        <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Dish"/>
+    </puro:BType>
+    <puro:BRelation rdf:about="http://lod2-dev.vse.cz/data/puromodels#ingredient">
+        <rdfs:label>ingredient</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#howMuch_1pc"/>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#egg"/>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#howMuch"/>
+    </puro:BRelation>
+    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#egg">
+        <rdfs:label>egg</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+        <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#IngredientType"/>
+    </puro:BType>
+    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#IngredientType">
+        <rdfs:label>IngredientType</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+    </puro:BType>
+    <puro:BAttribute rdf:about="http://lod2-dev.vse.cz/data/puromodels#fat">
+        <rdfs:label>fat</rdfs:label>
+    </puro:BAttribute>
+    <puro:BValuation rdf:about="http://lod2-dev.vse.cz/data/puromodels#fat_12g">
+        <rdfs:label>fat_12g</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#fat"/>
+    </puro:BValuation>
+    <puro:BAttribute rdf:about="http://lod2-dev.vse.cz/data/puromodels#energy">
+        <rdfs:label>energy</rdfs:label>
+    </puro:BAttribute>
+    <puro:BValuation rdf:about="http://lod2-dev.vse.cz/data/puromodels#energy_700kcal">
+        <rdfs:label>energy_700kcal</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#energy"/>
+    </puro:BValuation>
+    <puro:BAttribute rdf:about="http://lod2-dev.vse.cz/data/puromodels#size">
+        <rdfs:label>size</rdfs:label>
+    </puro:BAttribute>
+    <puro:BValuation rdf:about="http://lod2-dev.vse.cz/data/puromodels#size_100g">
+        <rdfs:label>size_100g</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#size"/>
+    </puro:BValuation>
+    <puro:BAttribute rdf:about="http://lod2-dev.vse.cz/data/puromodels#carbs">
+        <rdfs:label>carbs</rdfs:label>
+    </puro:BAttribute>
+    <puro:BValuation rdf:about="http://lod2-dev.vse.cz/data/puromodels#carbs_30g">
+        <rdfs:label>carbs_30g</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#carbs"/>
+    </puro:BValuation>
+    <puro:BAttribute rdf:about="http://lod2-dev.vse.cz/data/puromodels#howMuch">
+        <rdfs:label>howMuch</rdfs:label>
+    </puro:BAttribute>
+    <puro:BValuation rdf:about="http://lod2-dev.vse.cz/data/puromodels#howMuch_1pc">
+        <rdfs:label>howMuch_1pc</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#howMuch"/>
+    </puro:BValuation>
 </rdf:RDF>

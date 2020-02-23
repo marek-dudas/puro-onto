@@ -1,16 +1,10 @@
 import MainController from "./MainController";
 
 export default class RuleController extends MainController {
-
-    constructor (rules)
-    {
-        super();
-        this.rulesJson = rules;   
-        
-    }
+    
 
     //ruleSelection queryTree, 
-    ruleSelection = (rules, key, element, ontoType, rule, queryTree) => 
+    ruleSelection = (rules, key, element, previousElName, rule, queryTree) => 
     {
         
         let commands; 
@@ -27,11 +21,10 @@ export default class RuleController extends MainController {
         }
         else
         {
-            console.log(rules)
-            console.log(key)
             commands = this.getSpecificRule(rules,key);
-            additionalRules = this.getAdditionalRule(commands,ontoType);
-            offerTypes = (additionalRules.length > 0 ) ? offerTypes = additionalRules : offerTypes = commands.offer;   
+            //additionalRules = this.getAdditionalRule(commands,ontoType);
+            //offerTypes = (additionalRules.length > 0 ) ? offerTypes = additionalRules : offerTypes = commands.offer;
+            offerTypes = commands.offer   
         }
 
         //z elementu udělat otázku
@@ -53,9 +46,19 @@ export default class RuleController extends MainController {
         }
         else
         {
-            
-            uri = false; 
-            question = rules.questions[2].question;
+            //zjisti zda je chyby nebno ne 
+            needElName = true;
+
+            //Třeba dodělat Replace!!
+
+            for (let q of this.rulesJson.questions)
+            {
+                if (q.type === "bTypeChild")
+                {
+                    question = q.question.replace("VAL", previousElName);
+                    break;
+                }
+            }
         }
        
         return this.createButtons(offerTypes,question, "classSelection",needElName,elName);
@@ -96,16 +99,12 @@ export default class RuleController extends MainController {
             // !!! Převod na metodu a úprava dle pravidel
             // udělat connect -> subtype -> supertype jenom v případě arrow 
 
- 
-        
             let elTypes = {
-                superType: ontoController.getRelatedTypes(element.uri,"to", "Arrow"), 
-                subType: ontoController.getRelatedTypes(element.uri,"from","Arrow"), 
+                superType: ontoController.getRelatedTypes(element.uri,"to", "Generalization"), 
+                subType: ontoController.getRelatedTypes(element.uri,"from","Generalization"), 
                 connect: ontoController.getRelatedTypes(element.uri, "connect", false)
             };
 
-
-    
             for (let rule of rules)
             {
                 check = this.elementConsistencySelection(rule,elTypes.connect,"connect",element,check,rules,elTypes);
@@ -136,7 +135,7 @@ export default class RuleController extends MainController {
                 }
                 else 
                 {
-                    let additionalRules =  this.getSpecificRule(rules, key + "ed", true);
+                    const additionalRules =  this.getSpecificRule(rules, key + "ed", true);
                     if (additionalRules !== false)
                     {
                         for (let addRule of additionalRules)
@@ -166,9 +165,47 @@ export default class RuleController extends MainController {
         return check; 
     }
 
-    getSpecificRule = (rules, key, moreThanOne = false) =>
+    numberOfRuleStep (relationType, key, bTypeNumber)
+    {
+        const rule = this.getSpecificRule(this.rulesJson[relationType], key, false, bTypeNumber);
+        let indexCount = 0; 
+
+        for (let key in rule)
+        {
+            if (!isNaN(key))
+            {
+                indexCount ++; 
+            }
+        }
+
+        return indexCount; 
+    }
+
+    getSpecificRule = (rules, key, moreThanOne = false, bTypeNumber = false) =>
     {
         let addRules = [];
+        
+        
+        if (bTypeNumber !== false)
+        {
+            for (let node of rules)
+            {
+                if (node.key === key &&  ("bTypeNumber" in node) && node.bTypeNumber.includes(bTypeNumber))
+                {
+                    if (moreThanOne === true)
+                    {
+                        addRules.push(node);
+                    }
+                    else
+                    {   
+                        return node; 
+                    }   
+                }
+            }
+        }
+        
+
+
         for (let node of rules)
         {
          
@@ -185,6 +222,8 @@ export default class RuleController extends MainController {
             }
         }
 
+        // Tady možná hvězda 
+
         if (addRules.length > 0)
         {
             return rules;
@@ -197,17 +236,28 @@ export default class RuleController extends MainController {
 
 
 
-    getAdditionalRule = (rule, selectedType) =>
+    getAdditionalRule = (rule, selectedType, index) =>
     {
-
+        /*
         if (selectedType in rule)
         {
+            alert("bam")
+            console.log(rule)
             return rule[selectedType];
         }
         else
         {
             return [];
         }
+        */
+        if (rule !== false && index.toString() in rule && selectedType in rule[index])
+        {
+            console.log(rule[index][selectedType])
+            return rule[index][selectedType]; 
+        }
+        
+        return [];
+    
     }
 
 
@@ -235,7 +285,7 @@ export default class RuleController extends MainController {
         }
   
         // Změnit!! 
-        for (var rule of this.rulesJson.commonRules)
+        for (let rule of this.rulesJson.commonRules)
         {
 
             /*if ((fatherOnto.includes(rule.fatherOnto) || (fatherOnto.length === 0 && rule.fatherOnto === "")) &&

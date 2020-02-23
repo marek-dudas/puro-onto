@@ -1,48 +1,63 @@
 {  
+  "lastTypes":["Kind"], 
+  
   "classes":[
     "Kind", "Subkind","Phase","Role", "Collective", "Quantity", "Relator","Category","RoleMixin","Mixin","Mode","Quality", "None"
-    ],
-    
+  ],
 
+  "relations":[
+     {"formal":"simleLine"}, {"material":"simleLine"},{"generalization":"arrowLine"},{"mediation": "simpleLine", "showType": true}, {"characterization": "simpleLine", "showType": true}, 
+     {"derivation": "dashedLine"}, {"structuration": "simpleLine"}, {"part-whole-shared": "aggregation"}, {"part-whole-exclusive": "composition"},
+     {"componentOf": "composition"},{"containment": "simpleLine"}, {"memberOf-F": "composition"},{"memberOf-B": "aggregation"},
+     {"subCollectionOf": "composition"}, {"subQuantityOf": "composition"}, {"connect": "simpleLine"}
+  ],
 
   "bRelationRules": [
     {"offer": ["Characterization","Relator"], "question":"Which type is relation VAL?"}
   ],
 
+ 
+  
+  
   "relationRules":[
-    {"from": ["Mode", "Kind"], "to": ["Subkind","Role"], "offer":["Arrow"]},
-    {"from": ["*"], "to":["Datatype"], "offer":["Row"], "fromT": ["*","1","0"], "toT": ["*","1","0"] }
+    {"from": ["Kind"], "to": ["Role"], "offer":["Generalization"]},
+    {"from": ["Mode"], "to": ["Subkind"], "offer":["Generalization"]},
+    {"from": ["*"], "to":["Datatype"], "offer":["connect"], "fromT": ["*","1","0"], "toT": ["*","1","0"] }
   ],
-
 
   "commonRules":[
-    {"childPuro": ["none"], "fatherOnto": ["none"], "connection": 0, "offer": ["Subkind"]},
-    {"fatherPuro": "", "fatherOnto": "","childPuro": "BType","hasRelation": 0, "offer": [0,1,2,3,4,5,6,7,10]},
-    {"fatherPuro": "", "fatherOnto": "","childPuro": "BType","hasRelation": 0, "offer": [0,1,2,3,4,5,6,7,10]}
+      {"childPuro": ["none"], "fatherOnto": ["Mode"], "connection": 0, "offer": ["Kind","Subkind","Phase","Role"]}
+     
+    ],
 
-  ],
-
+  
   "questions":[
     {"type": "BType", "question": "Which type is a VAL?"},
-    {"type": "instance", "question": "Which ontoUML elment represents instance VAL?"},
+    {"type": "instance", "question": "Which ontoUML element represents instance VAL?"},
+    {"type": "bTypeChild", "question": "Which element represents child of the VAL?"},
     {"type": "none", "question": "Which element plays TYPE to REL?"},
     {"type": "singleUniv", "question": "What is the TYPE of VAL?"}
   ],
   
   
   "Relator":[
-    {"key": "from", "offer": ["Kind", "Collective", "Role"], "Kind": ["Role", "Subkind"]},
+    {"key": "from", "bTypeNumber": ["1","2"], "offer": ["Kind", "Subkind", "Role", "Collective"],
+      "1": {"Kind": ["Role", "Subkind"]}
+    },
     {"key" : "to","offer": ["Role","Kind", "Collective"]},
+    
     {"key": "cardinality", "fromT": [1, "1..*"], "toT": [1,"1..*"]}
   ],
   
   "Characterization":[
-    {"key": "from", "offer": ["Kind", "Subkind", "Role"]},
+    {"key": "from", "bTypeNumber": ["1","2"], "offer": ["Kind", "Subkind", "Role", "Collective"]},
     {"key" : "to","offer": ["Mode", "Quality"]},
+    
     {"key": "cardinality", "fromT": [1,"*"], "toT": [1,"*"]}
   ],
 
-   "Mode":[
+
+  "Mode":[
     {"key": "superType", "type": []},
     {"key": "subType", "type": ["Subkind", "Kind"]}
     ],
@@ -51,14 +66,16 @@
   "Role":[
     {"key": "superType", "type": []},
     {"key": "subType", "type": []},
-    {"key": "connect", "type": ["Relator"]},
-    
+    {"key": "connect", "type": ["Relator", "Kind", "Subkind"]},
     {"key": "connected", "type": ["Relator"], "superType":["Kind"], "question": "singleUniv"}
     ],
+
+    
   "Kind":[
     {"key": "superType", "type": []},
     {"key": "subType", "type": []}
   ],
+  
   "Subkind":[
     {"key": "superType", "type": ["Kind", "Mode"]},
     {"key": "subType", "type": []}

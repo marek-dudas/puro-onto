@@ -1,8 +1,11 @@
+import jsonData from './rules.json';
 export default class MainController{
-
-   
-   
-   
+    
+    constructor()
+    {
+        this.rulesJson = JSON.parse(JSON.stringify(jsonData)); 
+        this.ontoUri = "http://lod2-dev.vse.cz/data/ontomodels#";
+    }
     // orgin lze držet jako property objektu 
     // uri lze držet v property objektu 
     createButtons (buttons, title, type, elName, origName = "") 
@@ -43,6 +46,20 @@ export default class MainController{
             return "What is " + unfinishedType.key + " of " + this.delUri(unfinishedType.element)+"?";
         }
 
+    }
+
+    countBTypesInTree(tree)
+    {
+        let index = 0; 
+        for (let node of tree)
+        {
+            if (this.delUri(node.type.value) === "BType" && !node.fatherTypeRelation.includes("http://lod2-dev.vse.cz/ontology/puro#instanceOf"))
+            {
+                index ++; 
+            }
+        }
+
+        return index; 
     }
    
    

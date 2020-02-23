@@ -161,43 +161,29 @@ export default class RdfController {
                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                  SELECT ?uri ?valuation ?label ?type ?connect ?child ?fatherType ?father ?fatherTypeRelation ?childType ?childRel WHERE 
                  {
-                     {?child puro:instanceOf ?uri}
-                     UNION
-                     {?child puro:subTypeOf ?uri}
-                     ?child a ?childType .
-                     ?child ?childRel ?uri . 
                      ?uri rdfs:label ?label .
                      ?uri a puro:BType . 
                      ?uri a ?type
-                     OPTIONAL {?uri puro:linkedTo ?connect}
+                     OPTIONAL {{?child puro:instanceOf ?uri} UNION {?child puro:subTypeOf ?uri} ?child a ?childType . ?child ?childRel ?uri . } 
+                     OPTIONAL {?uri puro:linkedTo ?connect. ?connect a puro:BRelation}
                      OPTIONAL {?uri puro:linkedTo ?valuation. ?valuation a puro:BValuation}
-                     FILTER NOT EXISTS {?uri puro:linkedTo ?obj}
                      FILTER NOT EXISTS {?uri puro:subTypeOf ?object}
+                     FILTER NOT EXISTS {?uri puro:instanceOf ?object}
                  }`;
                  return new Promise(resolve => {
                   
                   // instance může mít mnohem více dětí!!!! zaměř se na to a dej si na to pozor!!!
                   this.sparqlQuery(query, function callback(result) {
-                      
                       result.forEach(function(node) {
                             
                             node.father = [];
                             node.fatherType = [];
                             node.fatherTypeRelation = [];
-                            node.childType = [node.childType.value];
-                            node.child = [node.child.value];
-                            node.childRel = [node.childRel.value];
-                            if (node.connect) {
-                                node.connect = [node.connect.value]
-                            }
-                            else
-                            {
-                                node.connect = [];
-                            }
                             // tady to nastav ve SPARQ 
                             node["connectFrom"] = [];
                     });
-                      this.deleteDuplicity(result,["valuation"]);
+                  
+                      this.deleteDuplicity(result,["valuation", "connect", "childType", "child", "childRel"]);
                       this.recursiveFindChild(0,result,[], function lastCall(lastResult){
                              resolve(lastResult);
                      });

@@ -1,5 +1,3 @@
-import { notEqual } from "assert";
-import { linkRelationProperty } from "rdflib/lib/util";
 import MainController from "./MainController";
 
 export default class ImagController extends MainController {
@@ -19,16 +17,12 @@ export default class ImagController extends MainController {
         for (let node of this.ontoModel)
         {
             if (node["type"] === "relation" && this.findLabel(node.to) !== false && this.findLabel(node.from) !== false) {
-                if (node.ontoType === "Arrow")
-                {
-                    graphCommand += this.findLabel(node.to)  + " --|> " +  this.findLabel(node.from) + "\n"; 
-                }
-                else if (node.ontoType === "Relator")
+                if (node.ontoType === "Relator")
                 {
                     if (node.from && node.to) 
                     {
-                       let fromT = node.fromType;
-                        let toT = node.toType;
+                       const fromT = node.fromType;
+                       const toT = node.toType;
 
                     
                         graphCommand += 'class '+ node.label + `{
@@ -41,11 +35,12 @@ export default class ImagController extends MainController {
                 }
                 else
                 {
-                    // může být i noType -
-                    let fromT = node.fromType;
-                    let toT = node.toType;
-                
-                    graphCommand += this.findLabel(node.from) +" "+ (fromT ? '"'+fromT+'"' : "") +" .. "+ (toT ? '"'+toT+'"' : "") + " " + this.findLabel(node.to) + (node.ontoType === "Row" ? "" : " : <<"+node.ontoType+">>") + "\n"; 
+                    
+                    const fromT = node.fromType;
+                    const toT = node.toType;
+                    const relationSpec = this.getRelationSpec(node.ontoType);
+
+                    graphCommand += this.findLabel(node.from) +" "+ (fromT ? '"'+fromT+'"' : "") + relationSpec[0] + (toT ? '"'+toT+'"' : "") + " " + this.findLabel(node.to) + (relationSpec[1] === true ? " : <<"+node.ontoType+">>" : "" ) + "\n"; 
                 }
 
             }
@@ -59,6 +54,37 @@ export default class ImagController extends MainController {
         }
         return graphCommand = (graphCommand.trim() === "classDiagram") ? false : graphCommand; 
     }
+    
+    getRelationSpec (ontoType)
+    {
+        for(let rel of this.rulesJson.relations)
+        {
+            if (ontoType.toLowerCase() in rel)
+            {
+                const normRelType = rel[ontoType.toLowerCase()].toLowerCase(); 
+                const showType = "showType" in rel && rel["showType"] === true ? true : false;  
+                let code; 
+                switch(normRelType)
+                {
+                    case "arrowline": code = " --|> "; 
+                        break; 
+                    case "simpleline": code = " -- "; 
+                        break; 
+                    case "dashedline": code = " .. "; 
+                        break; 
+                    case "composition": code = " --* "; 
+                        break; 
+                    case "aggregation": code = " --o "; 
+                        break; 
+                    default:  code = " -- "; 
+                }
+                
+
+                return [code, showType]; 
+            }
+        }
+    }
+
 
     findLabel (uri)
     {
