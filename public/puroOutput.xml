@@ -8,6 +8,7 @@
         <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
         <puro:rigid>true</puro:rigid>
     </puro:BType>
+
     <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#The_history_of_dogs">
         <rdfs:label>The_history_of_dogs</rdfs:label>
         <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
@@ -29,13 +30,9 @@
         <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#when_May_6"/>
         <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Prague"/>
         <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#when"/>
-        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Sook"/>
+     
     </puro:BRelation>
-        <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Sook">
-        <rdfs:label>Sook</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-    </puro:BType>
+
     <puro:BObject rdf:about="http://lod2-dev.vse.cz/data/puromodels#Prague">
         <rdfs:label>Prague</rdfs:label>
         <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>

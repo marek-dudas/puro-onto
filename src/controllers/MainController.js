@@ -1,8 +1,21 @@
-import jsonData from './rules.json';
+import $ from 'jquery';
 export default class MainController{
     
     constructor()
     {
+        
+        let jsonData;
+        $.ajax({
+            type: "GET",
+            url: "rules.json",
+            async: false,
+            cache: false,
+            dataType: "json",
+            success: function(json) {
+                jsonData = json;
+            }
+        });
+
         this.rulesJson = JSON.parse(JSON.stringify(jsonData)); 
         this.ontoUri = "http://lod2-dev.vse.cz/data/ontomodels#";
     }
@@ -43,7 +56,8 @@ export default class MainController{
         }
         else
         {
-            return "What is " + unfinishedType.key + " of " + this.delUri(unfinishedType.element)+"?";
+            const preposition = this.isSameCaseInsensitive(unfinishedType.key, "connect") ? " to " : " of ";
+            return "What is " + unfinishedType.key + preposition + this.delUri(unfinishedType.element)+"?";
         }
 
     }
@@ -83,6 +97,13 @@ export default class MainController{
             return "";
         }
         
+    }
+     getKeyByValue(object, value) {
+        return Object.keys(object).find(key => object[key] === value);
+      }
+
+    isSameCaseInsensitive(text, other) {
+        return text.localeCompare(other, undefined, { sensitivity: 'base' }) === 0;
     }
 
 

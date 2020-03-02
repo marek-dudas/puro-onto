@@ -104,7 +104,7 @@ export default class RuleController extends MainController {
                 subType: ontoController.getRelatedTypes(element.uri,"from","Generalization"), 
                 connect: ontoController.getRelatedTypes(element.uri, "connect", false)
             };
-
+            console.log(elTypes)
             for (let rule of rules)
             {
                 check = this.elementConsistencySelection(rule,elTypes.connect,"connect",element,check,rules,elTypes);
@@ -117,7 +117,7 @@ export default class RuleController extends MainController {
             {
                 
             }
-            
+            //Kontrola none a spojených typů!! 
          
             return check;
     }
@@ -305,6 +305,7 @@ export default class RuleController extends MainController {
             }
         }
     }
+
 
 
 }

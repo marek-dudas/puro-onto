@@ -6,7 +6,7 @@ export default class RdfController {
     constructor() {
 
         this.rdf = require('rdflib');
-        var puro ;
+        let puro ;
         
         $.ajax({
             type: "GET",
@@ -271,7 +271,7 @@ export default class RdfController {
                     this.sparqlQuery(query, (result) => {
                         
                         // result.push({uri: {token:"uri", value: relationUri}});
-                        
+                
                         this.recursiveFindChild(0,result,[], function lastCall(lastResult){
                                resolve(lastResult);
                        },"relation");

@@ -16,21 +16,35 @@ export default class ImagController extends MainController {
 
         for (let node of this.ontoModel)
         {
-            if (node["type"] === "relation" && this.findLabel(node.to) !== false && this.findLabel(node.from) !== false) {
+            if (node["type"] === "relation" && this.findLabel(node.to[0]) !== false && this.findLabel(node.from[0]) !== false) {
                 if (node.ontoType === "Relator")
                 {
-                    if (node.from && node.to) 
+
+                    if (node.from.length > 0 && node.to.length > 0) 
                     {
+                    
+                      
                        const fromT = node.fromType;
                        const toT = node.toType;
+
 
                     
                         graphCommand += 'class '+ node.label + `{
                                 <<`+ node.ontoType + `>>
                         }\n`;   
                         
-                        graphCommand += this.findLabel(node.from) +" "+ (fromT ? '"'+fromT[0]+'"' : "") +" .. "+ (toT ? '"'+fromT[1]+'"' : "") + " " + node.label +  " : <<Mediation>>\n"; 
-                        graphCommand += node.label +" "+ (toT ? '"'+toT[0]+'"' : "") +" .. "+ (toT ? '"'+toT[1]+'"' : "") + " " + this.findLabel(node.to) + " : <<Mediation>>\n"; 
+                        for (let key in node.from)
+                        {
+                            graphCommand += this.findLabel(node.from[key]) +" "+ (node.fromType[key] ? '"'+node.fromType[key][0]+'"' : "") +" .. "+ (node.toType[key] ? '"'+node.fromType[key][1]+'"' : "") + " " + node.label +  " : <<Mediation>>\n";
+                        }
+
+                      //  graphCommand += this.findLabel(node.from) +" "+ (fromT ? '"'+fromT[0]+'"' : "") +" .. "+ (toT ? '"'+fromT[1]+'"' : "") + " " + node.label +  " : <<Mediation>>\n"; 
+                        
+                        for (let key in node.to)
+                        {
+                            graphCommand += node.label +" "+ (node.toType[key] ? '"'+node.toType[key][0]+'"' : "") +" .. "+ (node.toType[key]  ? '"'+node.toType[key][1]+'"' : "") + " " + this.findLabel(node.to[key]) + " : <<Mediation>>\n"; 
+                        }
+                      
                     }
                 }
                 else
@@ -39,8 +53,25 @@ export default class ImagController extends MainController {
                     const fromT = node.fromType;
                     const toT = node.toType;
                     const relationSpec = this.getRelationSpec(node.ontoType);
-
-                    graphCommand += this.findLabel(node.from) +" "+ (fromT ? '"'+fromT+'"' : "") + relationSpec[0] + (toT ? '"'+toT+'"' : "") + " " + this.findLabel(node.to) + (relationSpec[1] === true ? " : <<"+node.ontoType+">>" : "" ) + "\n"; 
+                    if (node.from.length === node.to.length)
+                    {
+                        for (let key in node.from)
+                        {
+                            graphCommand += this.findLabel(node.from[key]) +" "+ (node.fromType[key] ? '"'+node.fromType[key]+'"' : "") + relationSpec[0] + (node.toType[key] ? '"'+node.toType[key]+'"' : "") + " " + this.findLabel(node.to[key]) + (relationSpec[1] === true ? " : <<"+node.ontoType+">>" : "" ) + "\n"; 
+                        }
+                    }
+                    else
+                    {
+                        for (let key in node.from)
+                        {
+                            let base = this.findLabel(node.from[key]) +" "+ (node.fromType[key] ? '"'+node.fromType[key]+'"' : "") + relationSpec[0];
+                            
+                            for (let toKey in node.to)
+                            {
+                                graphCommand += base + (node.toType[toKey] ? '"'+node.toType[toKey]+'"' : "") + " " + this.findLabel(node.to[toKey]) + (relationSpec[1] === true ? " : <<"+node.ontoType+">>" : "" ) + "\n"; 
+                            }
+                        }
+                    }   
                 }
 
             }
@@ -59,27 +90,28 @@ export default class ImagController extends MainController {
     {
         for(let rel of this.rulesJson.relations)
         {
-            if (ontoType.toLowerCase() in rel)
+            
+            if (ontoType in rel)
             {
-                const normRelType = rel[ontoType.toLowerCase()].toLowerCase(); 
+                
+                const normRelType = rel[ontoType]; 
                 const showType = "showType" in rel && rel["showType"] === true ? true : false;  
                 let code; 
-                switch(normRelType)
+                switch(normRelType.toLowerCase())
                 {
-                    case "arrowline": code = " --|> "; 
+                    case "arrowline": code = " <|-- ";  
                         break; 
                     case "simpleline": code = " -- "; 
                         break; 
                     case "dashedline": code = " .. "; 
                         break; 
-                    case "composition": code = " --* "; 
+                    case "composition": code = " *-- "; 
                         break; 
-                    case "aggregation": code = " --o "; 
+                    case "aggregation": code = " o-- "; 
                         break; 
                     default:  code = " -- "; 
                 }
-                
-
+            
                 return [code, showType]; 
             }
         }

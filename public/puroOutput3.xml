@@ -9,6 +9,7 @@
         <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
         <puro:rigid>true</puro:rigid>
     </puro:BType>
+
     <puro:BObject rdf:about="http://lod2-dev.vse.cz/data/puromodels#Alza">
         <rdfs:label>Alza</rdfs:label>
         <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
@@ -16,6 +17,7 @@
         <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#seller"/>
         <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#offer"/>
     </puro:BObject>
+
     <puro:BRelation rdf:about="http://lod2-dev.vse.cz/data/puromodels#offer">
         <rdfs:label>offer</rdfs:label>
         <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
@@ -24,6 +26,7 @@
         <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#for"/>
         <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#dellLatitudeE233"/>
     </puro:BRelation>
+    
     <puro:BAttribute rdf:about="http://lod2-dev.vse.cz/data/puromodels#for">
         <rdfs:label>for</rdfs:label>
     </puro:BAttribute>

@@ -30,7 +30,7 @@ class Layout extends React.Component {
     this.eventController = new EventController();
     mermaid.initialize({
       startOnLoad: false,
-       themeCSS: '#extensionEnd { fill: white; }',
+       themeCSS: '#extensionEnd { fill: white; } #extensionStart { fill: white; }',
         });
   }
 
@@ -165,11 +165,11 @@ class QuestionPart extends React.Component {
      let setState = true;
      let nameWasChange = this.state.nameWasChange;
 
-     if (elName === "" && this.state.changeName === true && type !== "Undo")
+     if ((elName === "" && this.state.changeName === true && type !== "Undo") && selectedType.toLowerCase() !== "none")
      {
        alert("Plese write name of the element!");
      }
-     else if (elName !== "" && elName.match(/^[A-z]*[<>,.*|]+[A-z]*$/))
+     else if (elName !== "" && !elName.match(/^[A-Za-z0-9-_*<>]+$/))
      {
        alert("Please change the name. It contains forbidden characters!");
      }
@@ -206,7 +206,7 @@ class QuestionPart extends React.Component {
         else if (setState === true)
         {
           
-          this.eventController.nextElement(selectedType,selectedUri,type, elName, nameWasChange).then(results => {
+           this.eventController.nextElement(selectedType,selectedUri,type, elName, nameWasChange).then(results => {
             
             if (undo === false)
             {
@@ -307,6 +307,7 @@ class QuestionPart extends React.Component {
   render() {
     return(
       <div className = "container-fluid text-center questionPart">
+
          <button type="Submint" className= {this.state.startTransform ? "btn btn-primary" : "d-none"} data-toggle="modal" data-target="#exampleModal"  onClick = {this.handleSubmit}>
               Start transformation
           </button>
@@ -314,7 +315,7 @@ class QuestionPart extends React.Component {
         <h3>{this.state.title}</h3>
         <div className = "optionButtons d-none d-md-block">
         <div className = "btn-group-vertical text-right"> 
-          <button  type = "button" className =  "btn btn-primary btnModal"   onClick = {this.handleChangeName} disabled = {this.state.originalName === "" || this.state.type.includes("ontoRelation") || this.state.type.includes("end")}>{this.state.changeName === true && this.state.originalName !== "" ? "Set original name" : "Change name"}</button>
+          <button  type = "button" className =  "btn btn-primary btnModal"   onClick = {this.handleChangeName} disabled = {this.state.originalName === "" || this.state.type.includes("ontoRelation") || this.state.type.includes("end") || this.state.type === "nextBranchElements"}>{this.state.changeName === true && this.state.originalName !== "" ? "Set original name" : "Change name"}</button>
           <button type = "button" className="btn btn-primary btnModal" onClick = {() => this.handleClick(undefined,undefined,"Undo")} disabled = {!this.state.undoActive}>Undo</button>
           <button type="button" className="btn btn-secondary btnModal" data-dismiss="modal" onClick={(e) => { if (window.confirm('Are you sure you want to cancel the transformation?')) window.location.reload(); } }>Cancel</button>
         </div>
@@ -390,7 +391,7 @@ class ModalButtons extends React.Component {
       <div className="row col-md-6 mx-auto">
       {this.props.buttons.map((value) => {
         return  <div className = "col-md-4 mx-auto">
-                      <button key = {this.props.uri} type="button"  className="btn btn-success btnModal" onClick = {() => this.props.onClick(value.name, value.uri, this.props.type, value.origin)} >{(this.props.type.includes("dataType") || ( this.props.originalName === "" && this.props.buttons.length === 1) || (value.name.toLowerCase() === "relator" &&  this.props.buttons.length === 1)) ? "Next" : value.name}</button>
+                      <button key = {this.props.uri} type="button"  className= {value.name.toLowerCase() === "none"? " btn btn-secondary btnModal" : "btn btn-success btnModal"} onClick = {() => this.props.onClick(value.name, value.uri, this.props.type, value.origin)} >{(this.props.type.includes("dataType") || ( this.props.originalName === "" && this.props.buttons.length === 1) || (value.name.toLowerCase() === "relator" &&  this.props.buttons.length === 1)) ? "Next" : value.name}</button>
                 </div>
       })}
      </div>

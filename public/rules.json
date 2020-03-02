@@ -1,12 +1,12 @@
 {  
-  "lastTypes":["Kind"], 
+  "lastTypes":["Kind", "Collective"], 
   
   "classes":[
     "Kind", "Subkind","Phase","Role", "Collective", "Quantity", "Relator","Category","RoleMixin","Mixin","Mode","Quality", "None"
   ],
 
   "relations":[
-     {"formal":"simleLine"}, {"material":"simleLine"},{"generalization":"arrowLine"},{"mediation": "simpleLine", "showType": true}, {"characterization": "simpleLine", "showType": true}, 
+     {"formal":"simleLine"}, {"material":"simleLine"},{"Generalization":"arrowLine"},{"mediation": "simpleLine", "showType": true}, {"Characterization": "simpleLine", "showType": true}, 
      {"derivation": "dashedLine"}, {"structuration": "simpleLine"}, {"part-whole-shared": "aggregation"}, {"part-whole-exclusive": "composition"},
      {"componentOf": "composition"},{"containment": "simpleLine"}, {"memberOf-F": "composition"},{"memberOf-B": "aggregation"},
      {"subCollectionOf": "composition"}, {"subQuantityOf": "composition"}, {"connect": "simpleLine"}
@@ -20,14 +20,16 @@
   
   
   "relationRules":[
-    {"from": ["Kind"], "to": ["Role"], "offer":["Generalization"]},
-    {"from": ["Mode"], "to": ["Subkind"], "offer":["Generalization"]},
+    {"from": ["Kind", "Subkind"], "to": ["Role"], "offer":["Generalization"]},
+    {"from": ["Mode"], "to": ["Kind","Subkind", "Role"], "offer":["Generalization"]},
+    {"from": ["Kind"], "to": ["Subkind"], "offer":["Generalization"]},
+    {"from": ["Collective"], "to": ["Subkind","Kind", "Role"], "offer": ["memberOf-F"]},
     {"from": ["*"], "to":["Datatype"], "offer":["connect"], "fromT": ["*","1","0"], "toT": ["*","1","0"] }
   ],
 
   "commonRules":[
-      {"childPuro": ["none"], "fatherOnto": ["Mode"], "connection": 0, "offer": ["Kind","Subkind","Phase","Role"]}
-     
+      {"childPuro": ["none"], "fatherOnto": ["Mode"], "connection": 0, "offer": ["Kind","Subkind","Role"]},
+      {"childPuro": ["none"], "fatherOnto": ["Role"], "connection": 0, "offer": ["Role", "None"]}
     ],
 
   
@@ -42,43 +44,50 @@
   
   "Relator":[
     {"key": "from", "bTypeNumber": ["1","2"], "offer": ["Kind", "Subkind", "Role", "Collective"],
-      "1": {"Kind": ["Role", "Subkind"]}
+      "1": {"Kind": ["Role", "Subkind"], "2": {"Role": ["Subkind"]}}
     },
-    {"key" : "to","offer": ["Role","Kind", "Collective"]},
-    
+    {"key" : "to","offer": ["Role","Kind", "Collective"],
+      "1": {"Kind": ["Role", "Subkind", "None"]}
+    },
     {"key": "cardinality", "fromT": [1, "1..*"], "toT": [1,"1..*"]}
   ],
   
   "Characterization":[
     {"key": "from", "bTypeNumber": ["1","2"], "offer": ["Kind", "Subkind", "Role", "Collective"]},
     {"key" : "to","offer": ["Mode", "Quality"]},
-    
     {"key": "cardinality", "fromT": [1,"*"], "toT": [1,"*"]}
   ],
 
 
   "Mode":[
     {"key": "superType", "type": []},
-    {"key": "subType", "type": ["Subkind", "Kind"]}
+    {"key": "subType", "type": ["Subkind", "Kind", "Role", "None"]}
     ],
 
 
   "Role":[
-    {"key": "superType", "type": []},
+    {"key": "superType", "type": ["Kind", "Subkind", "None"]},
     {"key": "subType", "type": []},
-    {"key": "connect", "type": ["Relator", "Kind", "Subkind"]},
+    {"key": "connect", "type": ["Relator", "None"]},
     {"key": "connected", "type": ["Relator"], "superType":["Kind"], "question": "singleUniv"}
     ],
 
-    
+  "Collective":[
+    {"key": "superType", "type": []},
+    {"key": "subType", "type": []},
+    {"key": "connect", "type": ["Kind", "Subkind", "Role"]}
+  ]
+  , 
   "Kind":[
     {"key": "superType", "type": []},
     {"key": "subType", "type": []}
   ],
   
   "Subkind":[
-    {"key": "superType", "type": ["Kind", "Mode"]},
-    {"key": "subType", "type": []}
+    {"key": "superType", "type": ["Kind", "Mode", "Subkind", "Collective"]},
+    {"key": "subType", "type": []},
+    {"key": "connect", "type":["Mode", "None"]},
+    {"key": "connected", "type": ["Mode"], "superType":["Kind", "None"], "question": "singleUniv"}
   ]
   }
 
