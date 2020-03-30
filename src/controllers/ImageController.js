@@ -8,7 +8,7 @@ export default class ImagController extends MainController {
         this.ontoModel = [];
     }
 
-    createGraph = (ontoModel) =>
+    createGraph  (ontoModel) 
     {
         this.ontoModel = ontoModel;
         let graphCommand = "classDiagram\n"; 
@@ -22,12 +22,6 @@ export default class ImagController extends MainController {
 
                     if (node.from.length > 0 && node.to.length > 0) 
                     {
-                    
-                      
-                       const fromT = node.fromType;
-                       const toT = node.toType;
-
-
                     
                         graphCommand += 'class '+ node.label + `{
                                 <<`+ node.ontoType + `>>
@@ -50,14 +44,12 @@ export default class ImagController extends MainController {
                 else
                 {
                     
-                    const fromT = node.fromType;
-                    const toT = node.toType;
                     const relationSpec = this.getRelationSpec(node.ontoType);
                     if (node.from.length === node.to.length)
                     {
                         for (let key in node.from)
                         {
-                            graphCommand += this.findLabel(node.from[key]) +" "+ (node.fromType[key] ? '"'+node.fromType[key]+'"' : "") + relationSpec[0] + (node.toType[key] ? '"'+node.toType[key]+'"' : "") + " " + this.findLabel(node.to[key]) + (relationSpec[1] === true ? " : <<"+node.ontoType+">>" : "" ) + "\n"; 
+                            graphCommand += this.findLabel(node.from[key]) +" "+ (node.fromType[key] ? '"'+node.fromType[key]+'"' : "") + relationSpec[0] + (node.toType[key] ? '"'+node.toType[key]+'"' : "") + " " + this.findLabel(node.to[key]) + (relationSpec[1] === true ? " : <<"+node.ontoType.split('-')[0]+">>" : "" ) + "\n"; 
                         }
                     }
                     else
@@ -68,7 +60,7 @@ export default class ImagController extends MainController {
                             
                             for (let toKey in node.to)
                             {
-                                graphCommand += base + (node.toType[toKey] ? '"'+node.toType[toKey]+'"' : "") + " " + this.findLabel(node.to[toKey]) + (relationSpec[1] === true ? " : <<"+node.ontoType+">>" : "" ) + "\n"; 
+                                graphCommand += base + (node.toType[toKey] ? '"'+node.toType[toKey]+'"' : "") + " " + this.findLabel(node.to[toKey]) + (relationSpec[1] === true ? " : <<"+node.ontoType.split('-')[0]+">>" : "" ) + "\n"; 
                             }
                         }
                     }   

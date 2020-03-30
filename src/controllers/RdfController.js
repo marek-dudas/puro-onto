@@ -1,29 +1,41 @@
 import $ from 'jquery';
+import MainController from './MainController';
 
 
-export default class RdfController {
+export default class RdfController extends MainController {
     
     constructor() {
-
+        super(); 
         this.rdf = require('rdflib');
         let puro ;
         
+        const modelURL = this.rulesJson["modelURL"].replace("MODELID", this.modelId)
+        // puroOutput.xml
         $.ajax({
             type: "GET",
             url: "puroOutput.xml",
+            crossDomain: true,
             async: false,
             cache: false,
             dataType: "xml",
             success: function(xml) {
+          
                 this.puroXML = xml;
+                console.log(this.puroXML)
                 puro = xml; 
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+             alert("There is the problem to load serialized PURO model! \n" + errorThrown ); 
+             window.location.replace(document.referrer); 
             }
         });
+        
         this.puroXML = puro; 
+     
     }
 
 
-    getRelatorBtype = (relator, fromUri) =>
+    getRelatorBtype  (relator, fromUri) 
     {
             var query = `
             PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
@@ -59,7 +71,7 @@ export default class RdfController {
     }
 
 
-    findBTypeRelation =  (fatherElement, returnArr,endCall) => 
+    findBTypeRelation (fatherElement, returnArr,endCall)  
     {
             
             var elementsUri = fatherElement.uri.value;
@@ -102,12 +114,12 @@ export default class RdfController {
 
 
 
-    findBTypeChild =  (fatherElement, returnArr,endCall) => 
+    findBTypeChild  (fatherElement, returnArr,endCall) 
         {
                
-                var elementsUri = fatherElement.uri.value;
+                const elementsUri = fatherElement.uri.value;
                 
-                var query = `
+                const query = `
                  PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                  SELECT ?uri ?valuation ?valuationLabel ?label ?father ?fatherType ?type ?fatherTypeRelation ?connect ?connectFrom ?child ?childType ?childRel WHERE 
@@ -127,36 +139,27 @@ export default class RdfController {
                      OPTIONAL {?connectFrom puro:linkedTo ?uri. ?connectFrom a puro:BRelaion}
                      BIND ( <`+elementsUri+`>  AS ?father)
                  }`;
-                this.sparqlQuery(query, function callback(result) {  
-               
-                    var checkArr = []; 
-                    var connect = [];
-
+                this.sparqlQuery(query, result => {  
                     result = this.deleteDuplicity(result, ["connect","connectFrom", "father", "fatherType","fatherTypeRelation","child","childType","childRel","valuation"]);
                   
                     if (result.length > 0)
                     {
-                    
-                        // otestovat jak funguje v případě dvou 
                         for (let i in result) {
                             returnArr.push(result[i]);
                             this.findBTypeChild(result[i],returnArr,endCall);
-                        
                         }
                     }
                     else
-                    {
-                        //POZOR MUZE BYT CHYB kvuli opakovani
-                      
+                    { 
                         endCall(returnArr);
                         return returnArr;
                     }
-                }.bind(this));          
+                });          
              }
 
-             getFullPath = () => 
+             getFullPath ()  
              {
-                 var query = `
+                 const query = `
                  PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                  SELECT ?uri ?valuation ?label ?type ?connect ?child ?fatherType ?father ?fatherTypeRelation ?childType ?childRel WHERE 
@@ -184,16 +187,17 @@ export default class RdfController {
                     });
                   
                       this.deleteDuplicity(result,["valuation", "connect", "childType", "child", "childRel"]);
-                      this.recursiveFindChild(0,result,[], function lastCall(lastResult){
+                      this.recursiveFindChild(0,result,[], lastResult => {
                              resolve(lastResult);
                      });
                  }.bind(this));
              });
              }
 
-             recursiveFindChild = (i, result, bTypeTree,lastCall, type) => 
-             {       
-                 if(i === result.length)
+             recursiveFindChild (i, result, bTypeTree,lastCall, type)
+             {      
+                 //last change 
+                 if(i >= result.length)
                  {
                      lastCall(bTypeTree);
                      return bTypeTree;
@@ -202,40 +206,38 @@ export default class RdfController {
                      bTypeTree.push(result[i]);
                      if (type === "relation")
                      {
-                        this.findBTypeRelation(result[i],bTypeTree, function endCall(final) {
+                        this.findBTypeRelation(result[i],bTypeTree, final => {
                             i++;
                             this.recursiveFindChild(i++, result, bTypeTree,lastCall, "relation");    
-                        }.bind(this));
+                        });
                      }
                      else
                      {
-                       
-                        this.findBTypeChild(result[i],bTypeTree, function endCall(final) {
+                        this.findBTypeChild(result[i],bTypeTree,  final => {
                             i++;
                             this.recursiveFindChild(i++, result, bTypeTree,lastCall, type);    
-                        }.bind(this));
+                        });
                      }
 
                  }
     
              }
 
-             sparqlQuery = (sparql, callback) => {
-                var puroXML = this.puroXML;
-                puroXML = new XMLSerializer().serializeToString(puroXML);
+             sparqlQuery (sparql, callback)  {
+                const puroXML = new XMLSerializer().serializeToString(this.puroXML);
                
-                var store = this.rdf.graph();
-                var contentType = 'application/rdf+xml';
-                var baseUrl = "http://lod2-dev.vse.cz/";
+                const store = this.rdf.graph();
+                const contentType = 'application/rdf+xml';
+                const baseUrl = "http://lod2-dev.vse.cz/";
                 
-                 this.rdf.parse(puroXML, store, baseUrl, contentType); 
+                this.rdf.parse(puroXML, store, baseUrl, contentType); 
         
                 var turtle;
                  this.rdf.serialize(undefined, store, "http://www.w3sds.org/1999/02/22-rdf-syntax-ns#type", 'text/turtle', function(err, str){
                     turtle = str;
                 })
         
-                var rdfstore = require('rdfstore');
+                const rdfstore = require('rdfstore');
                 rdfstore.create( function(err, store) {
                      store.load("text/turtle", turtle, function(err, results) {
                         store.execute(sparql,
@@ -251,7 +253,7 @@ export default class RdfController {
 
      
             //from nebo to poslat si ukazatel? 
-            getRelationBTypes = (relationUri) => 
+            getRelationBTypes (relationUri) 
             {
                 
                 var query = `
@@ -282,7 +284,7 @@ export default class RdfController {
             }
 
             //začátek hlavního
-            getRelations = () => 
+            getRelations  () 
             {
                 // ještě by to chtělo sjednotit do pole 
                 var query = `
@@ -315,7 +317,7 @@ export default class RdfController {
                   }); 
             }
 
-            findRelation = (elementUri) => {
+            findRelation  (elementUri) {
                 var query = `
                 PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
                 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -332,7 +334,7 @@ export default class RdfController {
 
             }
 
-            firstFind = async () => {
+            async firstFind  ()  {
                 var query = `
                 PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
                 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -355,7 +357,7 @@ export default class RdfController {
             }
 
             //result[index].connect
-            deleteDuplicity = (result, properties) => {
+            deleteDuplicity  (result, properties) {
                 var duplicity;
                 var checkArr = []; 
                 

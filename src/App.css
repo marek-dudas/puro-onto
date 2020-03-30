@@ -37,5 +37,7 @@
 .questionPart {margin-top: 30px; max-width: 75%;}
 .cardinalitySelect {text-align-last:center;}
 .container {max-width: 100%;}
-.optionButtons {position: absolute; margin-left: 50px;   left: 65%; }
+.optionButtons {position: absolute; margin-left: 50px; left: 65%; }
 .changeAlert {margin-top: 15px; display: none;}
+.questionTitle {white-space: pre-wrap; font-size: 25px;}
+.questionTitle:first-line {font-size: 30px;}

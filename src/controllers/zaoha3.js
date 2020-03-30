@@ -10,7 +10,7 @@ export default class OntoModelController extends MainController {
     } 
   
     
-    addToOntoModel = (uri, label, ontoType, puroType, relationName, direction, elName, nameWasChange, ontoUri, branchIndex, origUri) => 
+    addToOntoModel = (uri, label, ontoType, puroType, relationName, direction,from, to, elName, nameWasChange = false, ontoUri, branchIndex) => 
     {
     
         if (this.getOntoElement(this.ontoUri + elName) === false)
@@ -18,8 +18,6 @@ export default class OntoModelController extends MainController {
             let elPuroType;
             let elLabel;
             let elUri; 
-            nameWasChange = nameWasChange === undefined ? false : nameWasChange;
-            origUri = origUri === undefined ? "" : origUri;
             if (elName !==  "" && elName !== undefined && nameWasChange === false) 
             {
 
@@ -35,10 +33,7 @@ export default class OntoModelController extends MainController {
                 elUri = uri; 
             }
 
-            if (this.getOntoElement(elUri) === false)
-            {
-                this.ontoModel.push({uri: elUri, label:elLabel, ontoType: ontoType, puroType: elPuroType, fromRelation: [relationName], direction: [direction], from: [undefined], to:[undefined],type:"Class", branchIndex: [branchIndex], origUri:origUri});
-            }    
+            this.ontoModel.push({uri: elUri, label:elLabel, ontoType: ontoType, puroType: elPuroType, fromRelation: [relationName], direction: [direction], from: [from], to:[to],type:"Class", branchIndex: [branchIndex]});
         }
         else
         {
@@ -76,20 +71,6 @@ export default class OntoModelController extends MainController {
         }
         return false;
     }
-
-    getElementByProperty (property, value)
-    {
-        for (let node of this.ontoModel)
-        {
-            if (node[property] === value)
-            {
-                return node; 
-            }
-        }
-
-        return false; 
-    }
-
 
     getReletadELement (element, relationName)
     {
@@ -224,6 +205,7 @@ export default class OntoModelController extends MainController {
 
     getElementOntoType = (uri) => 
     {
+        let ontoType = false; 
         
         let element = this.getOntoElement(uri);
 
@@ -308,21 +290,6 @@ export default class OntoModelController extends MainController {
         return false; 
     }
 
-    getElementInRelRow (lastElUri)
-    {
-        const relElements = this.getElementInRelation(lastElUri,"*","from",false); 
-        if (relElements.length === 0)
-        {
-            return lastElUri;
-        }
-        
-        const fatherChildren = this.getElementInRelation(relElements[0].element.uri,"*","to",this.getOntoElement(lastElUri).ontoType); 
-        console.log(fatherChildren)
-        console.log(fatherChildren[0].element.uri)
-        return fatherChildren[0].element.uri; 
-
-    }
-
     getLastElement = (origin, direction) =>
     {
         const uri = this.getLastElementUri(origin, direction);
@@ -353,80 +320,50 @@ export default class OntoModelController extends MainController {
 
     getRelationElements = (elName, element, selectedUri, relationUri, addRulesLenght, lastEl, puroType, ontoUri, ruleKey, nameWasChange, moreBranches) => 
     {
-        const ontoEl = this.getOntoElement(selectedUri);
-        if (elName !== "" && puroType !== "dataType" && nameWasChange === false && (element !== false || ontoEl !== false))
+        if (elName !== "" && puroType !== "dataType" && nameWasChange === false && element !== false)
         {
-           
+         
             let father;
             let passEl; 
             
             if (puroType === "superType")
             {
                 father = this.ontoUri + elName;
-                passEl = ontoEl !== false ? ontoEl.uri : element.uri.value; 
+                passEl = element.uri.value; 
             }
             else if (puroType === "subType")
             {
                 passEl = this.ontoUri + elName;    
-                father = ontoEl !== false ? ontoEl.uri : element.uri.value; 
+                father = element.uri.value;
             }
             else
             {
-                if (element !== false)
-                {
-                    father = element.father[0] === undefined ? element.uri.value : element.father[0];
-                }
-                else
-                {
-                    father = ontoEl.uri;
-                }
+                father = element.father[0] === undefined ? element.uri.value : element.father[0];
                 passEl = this.ontoUri + elName; 
             }
+
+            alert(father)
+            alert(passEl)
             return [father, passEl];
 
         }
-        else if (relationUri === null)
-        {
-            if (element.father.length > 0)
-            {
-
-                return [element.father[0], element.uri.value];
-            }
-            else return false; 
-            
-        }
-        else if (puroType.includes("elementSelection") || (element !== false && this.getOntoElement(element.father[0]) !== false))
+        else if (puroType === "elementSelection")
         {   
-      
-            let elementFather = this.getOntoElement(element.father[0]);
-            if (puroType.includes("invert") || !puroType.includes("elementSelection"))
-            {
-                return [element.uri.value, elementFather.uri];
-            }
-            else
-            {
-                return [elementFather.uri,element.uri.value];
             
-            }
+            //father může být pole.. předělat!!!
+            let elementFather = this.getOntoElement(element.father[0]);
+            return [elementFather.uri, element.uri.value];
+            //this.addRelation("Dodělat závislé na pravidlech", elementFather.uri , element.uri.value);
         }
+        //relationRule zrušit addRuleTakyZrušit 
         else if((addRulesLenght === 0 && lastEl === true) || element === false )
         {
-            //koko
-            let lastRelElement = this.getLastElement(relationUri);
-            lastRelElement = this.getOntoElement(this.getElementInRelRow(lastRelElement.uri))
-          
-            const passEl = (element === false) ? this.ontoUri + elName : selectedUri;
-
-            let lastElUri = this.getLastElementUri(relationUri,ruleKey);
-            lastElUri = this.getElementInRelRow(lastElUri); 
-    
+            
+            const lastRelElement = this.getLastElement(relationUri);
+            const passEl = (element === false) ? ontoUri + elName : selectedUri;
+        console.log(lastRelElement)
             if (lastRelElement !== false && (lastRelElement.direction[lastRelElement.direction.length - 1] !== ruleKey || moreBranches === true) && addRulesLenght === 0)
             {
-                if (!this.isRelationExist(lastElUri,passEl) &&  this.getOntoBranch(relationUri, ruleKey).length > 1)
-                {
-                    return [lastElUri, passEl];
-                }
-    
                 this.updateOntoModel(relationUri,ruleKey,passEl, false);
                 
                 return relationUri; 
@@ -437,10 +374,10 @@ export default class OntoModelController extends MainController {
             }
             
         }  
-     
+    
     }
 
-    checkDuplicity (label) 
+    checkDuplicity = (label) => 
     {
         for (let node of this.ontoModel)
         {
@@ -452,7 +389,7 @@ export default class OntoModelController extends MainController {
         return true; 
     }
 
-    getRelatedTypes (elUri, direction, ontoType) 
+    getRelatedTypes = (elUri, direction, ontoType) => 
     {
         let rels = this.getElementsRelation(elUri, direction);
         let elements = [];
@@ -460,22 +397,27 @@ export default class OntoModelController extends MainController {
         for (let rel of rels)
         {
           //Arrow 
-          
-          if (rel.ontoType === ontoType || (ontoType === "Generalization" && rel.ontoType.includes("memberOf")))
+          if (rel.ontoType === ontoType || direction === "connect")
           {
               const el = (rel.to.includes(elUri)) ? rel.from[rel.to.indexOf(elUri)] : rel.to[rel.from.indexOf(elUri)];
+              
               elements.push(el);
               types.push(this.getElementOntoType(el));
           }
-          else if (ontoType === false && rel.ontoType === "Relator")
+          else if (ontoType === false && rel.ontoType !== "Generalization")
           {
-            types.push(rel.ontoType); 
-          }
-          else if (ontoType === false)
-          {
-            const el = (rel.to.includes(elUri)) ? rel.from[rel.to.indexOf(elUri)] : rel.to[rel.from.indexOf(elUri)];
-            elements.push(el);
-            types.push(this.getElementOntoType(el)); 
+            if (rel.ontoType === "Relator")
+            {
+                types.push(rel.ontoType);
+            }
+            else 
+            {
+
+                const el = (rel.to.includes(elUri)) ? rel.from[rel.to.indexOf(elUri)] : rel.to[rel.from.indexOf(elUri)];
+                elements.push(el);
+        
+                types.push(this.getElementOntoType(el)); 
+            }
           }
         }  
 
@@ -497,39 +439,7 @@ export default class OntoModelController extends MainController {
         return returnArr; 
     }
 
-    getElementInRelation(elementUri, relationType, direction, ontoType)
-    {
-        let returnArr = [];
-        const all = relationType === "*" ? true : false; 
-        ontoType = ontoType === undefined || false ? false : ontoType; 
-
-        for (let relation of this.ontoModel)
-        {
-     
-            if (relation.type === "relation" && (relation.ontoType === relationType || all) && relation[this.getOpositeDirection(direction)].includes(elementUri))
-            {   
-                let el = this.getOntoElement(relation[direction][0]);
-         
-                if (ontoType === false || ontoType === el.ontoType)
-                {
-                    returnArr.push({element : el, relationType: relation.ontoType}); 
-                } 
-            }
-        }
-        return returnArr; 
-    }
-
-    isRelationExist(el1, el2)
-    {
-        for (let el of this.ontoModel)
-        {
-            if (el.type === "relation" && (el.from === el1 && el.to === el2) || (el.from === el2 && el.to === el1))
-            {
-                return true;
-            }
-        }
-        return false; 
-    }
+    
     getOntoBranch(relation, key)
     {
         let returnArr = [];
@@ -546,12 +456,21 @@ export default class OntoModelController extends MainController {
         
         return returnArr; 
     }
-    
-    connectToBranchElement(relation, key, selectedEl)
+
+    getElementByLabel (label)
     {
-
-        const question =  "To which element is the " + this.delUri(selectedEl.uri.value) + " connected?";
-
+        for (let node of this.ontoModel)
+        {
+            if (node.label === label)
+            {
+                return node; 
+            }
+        }
+        return false
+    }
+    
+    connectToBranchElement(relation, key)
+    {
         const firstEl = (this.getOntoBranch(relation, key)[0]);
         const lastEl = this.getLastElement(relation, key);
 
@@ -562,7 +481,7 @@ export default class OntoModelController extends MainController {
         else
         {
             
-            return this.createButtons([firstEl.label, lastEl.label],question, "nextBranchElements", false, "");
+            return [firstEl.label, lastEl.label];
         }
 
         if (firstEl.uri === lastEl.uri)

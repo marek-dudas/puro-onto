@@ -108,7 +108,6 @@ export default class OntoScheController {
                 
                 nodeCopy["from"] = [nodeCopy["from"][index]];
                 nodeCopy2["to"] = [nodeCopy["to"][opositeIndex]];
-
               }
               else
               {
@@ -153,6 +152,7 @@ export default class OntoScheController {
         else
         {
           alert("Model is not valid! Check OntoSchemaCotroller!"); 
+          return {}; 
         }
     }
 

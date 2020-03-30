@@ -30,17 +30,28 @@ export default class RuleController extends MainController {
         //z elementu udělat otázku
         if (element !== false)
         {
+            let additionalQuestion = "";
+            
+            if (element.connect.length > 1)
+            {
+                const relationLabel = element.connect[]; 
+                additionalQuestion = "\n In term of "+relationLabel+" relationship.";
+            }
+            
             if (this.isElementInstace(element,queryTree))
             {
                 needElName =true;
                 uri = element.uri.value;
-                question = this.rulesJson.questions[1].question.replace("VAL",element.label.value);
+
+
+
+                question = this.rulesJson.questions[1].question.replace("VAL",element.label.value) + additionalQuestion;
             }
             else
             {
                 needElName = false;
                 uri = element.uri.value;
-                question = this.rulesJson.questions[0].question.replace("VAL",element.label.value);
+                question = this.rulesJson.questions[0].question.replace("VAL",element.label.value) + additionalQuestion;
                 elName = element.label.value; 
             }
         }
@@ -84,15 +95,26 @@ export default class RuleController extends MainController {
         return false; 
     } 
 
+    moreThanOneRule (ontoController, element,count, check)
+    {
+        const elInRelation = ontoController.getElementInRelation(element.uri,"*","from",false)[0];   
+    
+        if (ontoController.getElementInRelation(elInRelation.element.uri,elInRelation.relationType,"to", element.ontoType).length < count)
+        {
+            check.push({key: "subType", types: [element.ontoType], element: elInRelation.element.uri, rule:{type:[element.ontoType],question:this.getQuestion(elInRelation.element,"moreThanOne")}}); 
+        }
+
+        return check; 
+
+    }
+
     // this.ontoController.getOntoElement(this.relation.uri.value);
     elementConsistencyRules = (element,  ontoController) => 
     {
-
             // v případě undefinied vyhoď, že pravidlo není definováno 
-            let rules = this.rulesJson[element.ontoType]; 
-           
+            let rules = this.rulesJson[element.ontoType];    
             let check = []; 
-            let addRule; 
+        
             
 
             //Tady by měla být pole jelikož to může být 1:N 
@@ -104,46 +126,67 @@ export default class RuleController extends MainController {
                 subType: ontoController.getRelatedTypes(element.uri,"from","Generalization"), 
                 connect: ontoController.getRelatedTypes(element.uri, "connect", false)
             };
-            console.log(elTypes)
+
+            
             for (let rule of rules)
             {
-                check = this.elementConsistencySelection(rule,elTypes.connect,"connect",element,check,rules,elTypes);
-                check = this.elementConsistencySelection(rule,elTypes.superType,"superType",element,check,rules,elTypes);
-                check = this.elementConsistencySelection(rule,elTypes.subType,"subType",element,check,rules,elTypes);
+             
+                check = this.elementConsistencySelection(rule,elTypes.connect,"connect",element,check,rules,elTypes, ontoController);
+                check = this.elementConsistencySelection(rule,elTypes.superType,"superType",element,check,rules,elTypes,ontoController);
+                check = this.elementConsistencySelection(rule,elTypes.subType,"subType",element,check,rules,elTypes, ontoController);
+                if (rule.key === "moreThanOne")
+                {
+                    check = this.moreThanOneRule(ontoController,element,rule.count,check);
+                }
             }
 
-            addRule = this.getSpecificRule(rules,"connected"); 
-            if (addRule !== false)
-            {
-                
-            }
             //Kontrola none a spojených typů!! 
-         
+
+            if ((check.length > 0 && check[0].types.includes("Relator") && check[0].types.includes("None")))
+            {
+                check.splice(0, 1);  
+            }
+
+            for (let i = 0; i < check.length; i++) {
+                check[i]["elLabel"] =  ontoController.getOntoElement(check[i].element).label;  
+            }
+
+
+
             return check;
     }
 
 
 
-    elementConsistencySelection = (rule,elTypes,key,element,check,rules,allTypes) =>
+    elementConsistencySelection = (rule,elTypes,key,element,check,rules,allTypes, ontoController) =>
     {
         if(rule.key === key)
         {
+                
+                const suffix = key[key.length - 1] === "e" ? "d" : "ed";
+                const additionalRules =  this.getSpecificRule(rules, key + suffix, true);
                 if (!rule.type.some(r=> elTypes.includes(r)) && rule.type.length > 0 )
                 {
                     // if includes none -> zkontrolovat lenght superType -> zeptat se jestli chci doplnit superType -> nabídnout co je v tabulce -> zkontrolovat jestli už není
                     check.push({key: key, types: rule.type, element:element.uri, rule:rule});
+
                 }
                 else 
                 {
-                    const additionalRules =  this.getSpecificRule(rules, key + "ed", true);
                     if (additionalRules !== false)
                     {
+                      
                         for (let addRule of additionalRules)
                         {
+                            console.log(JSON.parse(JSON.stringify(addRule)))
                             if (addRule.type.some(r=> elTypes.includes(r))) {
                                 check = this.elementConsAddSelection("superType",addRule,elTypes,check,element,allTypes);
                                 check = this.elementConsAddSelection("subType",addRule,elTypes,check,element,allTypes);
                                 check = this.elementConsAddSelection("connect",addRule,elTypes,check,element,allTypes);
+                                if ("moreThanOne" in addRule && addRule["moreThanOne"] === true)
+                                {
+                                    check = this.moreThanOneRule(ontoController,element,addRule.count,check);
+                                }
                             }
                         }
                     }
@@ -155,14 +198,32 @@ export default class RuleController extends MainController {
     
     elementConsAddSelection (type, rule, elTypes, check, element, allTypes)
     {
+    
         if (type in rule)
         {
+      
             if (!rule[type].some(r=> allTypes[type].includes(r)) && rule[type].length > 0 )
             {
+                
+                for (let index in check)
+                {
+                  
+                    if (check[index].key === type && check[index].element === element.uri)
+                    {
+                        check.splice(index, 1);
+                    }
+                }
                 check.push({key: type, types: rule[type], element:element.uri, rule:rule});
             }
+            else if ("moreThanOne" in rule && rule["moreThanOne"] === true)
+            {
+                //vrat element dej fathera 
+            }
+
         }
+    
         return check; 
+       
     }
 
     numberOfRuleStep (relationType, key, bTypeNumber)
@@ -181,10 +242,12 @@ export default class RuleController extends MainController {
         return indexCount; 
     }
 
-    getSpecificRule = (rules, key, moreThanOne = false, bTypeNumber = false) =>
+    getSpecificRule = (rules, key, moreThanOne, bTypeNumber) =>
     {
         let addRules = [];
         
+        bTypeNumber = bTypeNumber === undefined ? false : bTypeNumber; 
+        moreThanOne = moreThanOne === undefined ? false : moreThanOne; 
         
         if (bTypeNumber !== false)
         {
@@ -202,28 +265,28 @@ export default class RuleController extends MainController {
                     }   
                 }
             }
+
+       
         }
+            for (let node of rules)
+            {
+                
+                if (node.key === key)
+                {
+                    if (moreThanOne === true)
+                    {
+                        addRules.push(node);
+                    }
+                    else
+                    {   
+                        return node; 
+                    }   
+                }
+            }
         
 
 
-        for (let node of rules)
-        {
-         
-            if (node.key === key)
-            {
-                if (moreThanOne === true)
-                {
-                    addRules.push(node);
-                }
-                else
-                {   
-                    return node; 
-                }   
-            }
-        }
-
         // Tady možná hvězda 
-
         if (addRules.length > 0)
         {
             return rules;
@@ -261,15 +324,15 @@ export default class RuleController extends MainController {
     }
 
 
-    commonRuleSelection = (element, key, ontoModel) => 
+    commonRuleSelection = (element, start, ontoModel) => 
     {
         let result = [];
 
         // tohle vyřeš na úrovni onto modelu!
         let fatherOnto = [];
         let childPuroType = [];
-        const connection =  element.connect.length > 0 ? true : false;  
-   
+        //const connection =  element.connect.length > 0 ? true : false;  
+        let type = "elementSelection"; 
         for (let child of element.childType)
         {
             childPuroType.push(this.delUri(child));
@@ -283,25 +346,35 @@ export default class RuleController extends MainController {
             }
             
         }
-  
+
         // Změnit!! 
         for (let rule of this.rulesJson.commonRules)
         {
 
-            /*if ((fatherOnto.includes(rule.fatherOnto) || (fatherOnto.length === 0 && rule.fatherOnto === "")) &&
-                (fatherPuro.includes(rule.fatherPuro) || (fatherPuro.length === 0 && rule.fatherPuro === "")) &&
-                childPuro.includes(rule.childPuro) || childPuro === rule.childPuro &&
-                rule.hasRelation <= connection
-                )
-            */
-           if ((fatherOnto.some(r=> rule.fatherOnto.includes(r)) || (rule.fatherOnto.includes("none"))) &&
-            (connection === rule.connection || rule.connection === 0) && (element.childType.some(r=> rule.childPuro.includes(r) || 
+            /*((fatherOnto.some(r=> rule.fatherOnto.includes(r)) || (rule.fatherOnto.includes("none"))) &&
+            (element.childType.some(r=> rule.childPuro.includes(r) || 
             (rule.childPuro.includes("none"))) 
            ))
+            */
+            console.log(start === true)
+            console.log(rule.fatherOnto === "NoRelation")
+            console.log(rule.fatherOnto)
+           if (start === true && rule.fatherOnto[0] === "NoRelation")
+           {
+             const question = "Which type is "+element.label.value+"?";
+             return this.createButtons(rule.offer,question, type,false, element.label.value);
+           }
+           else if ((fatherOnto.some(r=> rule.fatherOnto.includes(r)) || (rule.fatherOnto.includes("none"))))
             {
+                
+                if ("invert" in rule && rule["invert"] === true)
+                {
+                    type += "-invert"
+                }
 
+                // tady doplň máš i rule 
                 const question = "Which type is "+element.label.value+"?";
-                return this.createButtons(rule.offer,question, "elementSelection",false, element.label.value);
+                return this.createButtons(rule.offer,question, type,false, element.label.value);
             }
         }
     }

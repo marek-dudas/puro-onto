@@ -1,0 +1,11 @@
+<rdf:RDF
+    xmlns:rdf= "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:puro="http://lod2-dev.vse.cz/ontology/puro#"
+    xmlns:pm="http://lod2-dev.vse.cz/data/puromodels#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Book">
+        <rdfs:label>Book</rdfs:label>
+        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
+        <puro:rigid>true</puro:rigid>
+    </puro:BType>
+</rdf:RDF>

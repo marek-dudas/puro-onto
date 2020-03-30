@@ -18,6 +18,9 @@ export default class MainController{
 
         this.rulesJson = JSON.parse(JSON.stringify(jsonData)); 
         this.ontoUri = "http://lod2-dev.vse.cz/data/ontomodels#";
+
+        const windowUrl = new URL(window.location.href);
+        this.modelId = windowUrl.searchParams.get("model");
     }
     // orgin lze držet jako property objektu 
     // uri lze držet v property objektu 
@@ -31,8 +34,20 @@ export default class MainController{
             return {name: buttonType};
         });
      
-
         return Promise.resolve({buttons: mapButtons, title: title, type: type, elName: elName, originalName: origName}); 
+    }
+
+    getQuestion(element, key)
+    {
+
+        for (let q of this.rulesJson.questions)
+        {
+            
+            if (q.type === key)
+            {
+                return q.question.replace("VAL", element.label); 
+            }
+        }
     }
 
     createQuestion (unfinishedType, questions) 
@@ -50,14 +65,15 @@ export default class MainController{
                     
                 }
             }
+            console.log(unfinishedType)
             question = (question === "") ? unfinishedType.rule.question : question; 
             let qType = (unfinishedType.key in unfinishedType.rule) ? unfinishedType.rule[unfinishedType.key][0] : unfinishedType.rule.type[0];
-            return question.replace("VAL", this.delUri(unfinishedType.element)).replace("TYPE",qType); 
+            return question.replace("VAL", unfinishedType.elLabel).replace("TYPE",qType); 
         }
         else
         {
             const preposition = this.isSameCaseInsensitive(unfinishedType.key, "connect") ? " to " : " of ";
-            return "What is " + unfinishedType.key + preposition + this.delUri(unfinishedType.element)+"?";
+            return "What is " + unfinishedType.key + preposition + unfinishedType.elLabel +"?";
         }
 
     }
@@ -104,6 +120,11 @@ export default class MainController{
 
     isSameCaseInsensitive(text, other) {
         return text.localeCompare(other, undefined, { sensitivity: 'base' }) === 0;
+    }
+
+    getOpositeDirection (direction)
+    {
+        return  direction = direction === "from" ? "to" : "from"; 
     }
 
 
