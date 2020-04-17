@@ -1,6 +1,10 @@
 import $ from 'jquery';
 export default class MainController{
     
+    
+    ontologyURL  = "http://lod2-dev.vse.cz/ontology/puro#"; 
+    ontoUri = "http://lod2-dev.vse.cz/data/ontomodels#"
+
     constructor()
     {
         
@@ -15,15 +19,19 @@ export default class MainController{
                 jsonData = json;
             }
         });
-
+        
         this.rulesJson = JSON.parse(JSON.stringify(jsonData)); 
-        this.ontoUri = "http://lod2-dev.vse.cz/data/ontomodels#";
-
         const windowUrl = new URL(window.location.href);
         this.modelId = windowUrl.searchParams.get("model");
     }
     // orgin lze držet jako property objektu 
     // uri lze držet v property objektu 
+
+    debug (element, text)
+    {
+        console.log([JSON.parse(JSON.stringify(element)), text])
+    }
+
     createButtons (buttons, title, type, elName, origName = "") 
     {
         
@@ -33,11 +41,10 @@ export default class MainController{
         const mapButtons = buttons.map(buttonType => {
             return {name: buttonType};
         });
-     
         return Promise.resolve({buttons: mapButtons, title: title, type: type, elName: elName, originalName: origName}); 
     }
 
-    getQuestion(element, key)
+    getQuestion(labelEL, key)
     {
 
         for (let q of this.rulesJson.questions)
@@ -45,7 +52,8 @@ export default class MainController{
             
             if (q.type === key)
             {
-                return q.question.replace("VAL", element.label); 
+                const replace = typeof labelEL === "string" ? labelEL : labelEL.label; 
+                return q.question.replace("VAL", replace); 
             }
         }
     }

@@ -19,7 +19,6 @@ export default class ImagController extends MainController {
             if (node["type"] === "relation" && this.findLabel(node.to[0]) !== false && this.findLabel(node.from[0]) !== false) {
                 if (node.ontoType === "Relator")
                 {
-
                     if (node.from.length > 0 && node.to.length > 0) 
                     {
                     

@@ -1,10 +1,12 @@
+import MainController from './MainController';
 
-export default class OntoScheController {
-
-    /*
+export default class OntoScheController extends MainController{
+  /*
     constructor()
     {
+      super(); 
 
+    
        const mod = this.initJson();
        console.log(mod)
        const model = this.transform(mod);
@@ -27,7 +29,8 @@ export default class OntoScheController {
         {
           console.log(validator.errors);
         }
-    } */
+       
+    }  */
 
     transform (ontoModel)
     {
@@ -74,14 +77,12 @@ export default class OntoScheController {
           }
           else if (node.ontoType.toLowerCase() === "relator")
           {
-            let nodeCopy = JSON.parse(JSON.stringify(node));
-            let nodeCopy2 = JSON.parse(JSON.stringify(node));  
             
             let key; 
               
             if (node.from.length >= node.to.length)
             {
-               key = "from";
+              key = "from";
             }
             else
             {
@@ -92,47 +93,71 @@ export default class OntoScheController {
 
             for (let index in node[key])
             {
+              let nodeCopy = JSON.parse(JSON.stringify(node));
+              let nodeCopy2 = JSON.parse(JSON.stringify(node));  
+
               nodeCopy["uri"] += "rel1"
               nodeCopy2["uri"] += "rel2"
         
-              nodeCopy["ontoType"] += "mediation"
-              nodeCopy2["ontoType"] += "mediation"
+              nodeCopy["ontoType"] = "mediation"
+              nodeCopy2["ontoType"] = "mediation"
               
               if (key === "from")
               {
                 nodeCopy["fromType"] = node["fromType"][index][0]; 
                 nodeCopy["toType"] = node["fromType"][index][1];
 
-                nodeCopy2["fromType"] = node["toType"][opositeIndex][0];
-                nodeCopy2["toType"] = node["toType"][opositeIndex][1];
+                if (opositeIndex !== false)
+                {
+                  nodeCopy2["fromType"] = node["toType"][opositeIndex][0];
+                  nodeCopy2["toType"] = node["toType"][opositeIndex][1];
+                  nodeCopy2["to"] = [nodeCopy["to"][opositeIndex]];
+                }
+
                 
                 nodeCopy["from"] = [nodeCopy["from"][index]];
-                nodeCopy2["to"] = [nodeCopy["to"][opositeIndex]];
+                
               }
               else
               {
-                nodeCopy["fromType"] = node["fromType"][opositeIndex][0]; 
-                nodeCopy["toType"] = node["fromType"][opositeIndex][1];
-
+                if (opositeIndex !== false)
+                {
+                  nodeCopy["fromType"] = node["fromType"][opositeIndex][0]; 
+                  nodeCopy["toType"] = node["fromType"][opositeIndex][1];
+                  nodeCopy["from"] = [nodeCopy["from"][opositeIndex]];
+                }
                 nodeCopy2["fromType"] = node["toType"][index][0];
                 nodeCopy2["toType"] = node["toType"][index][1];
                 
-                nodeCopy["from"] = [nodeCopy["from"][opositeIndex]];
+
                 nodeCopy2["to"] = [nodeCopy["to"][index]];
               }
               
               nodeCopy["to"] = [node.uri];
               nodeCopy2["from"] = [node.uri];
               
-              ontoUmlSchema["contents"].push(this.relationTransformation(nodeCopy, relCount, 0,0));
-              relCount += 2;
-  
-              ontoUmlSchema["contents"].push(this.relationTransformation(nodeCopy2, relCount,0,0));
-              relCount += 2;  
+              console.log (JSON.parse(JSON.stringify(nodeCopy)))
+              console.log (JSON.parse(JSON.stringify(nodeCopy2)))
+
+              if (!(key === "to" && opositeIndex === false))
+              {
+                ontoUmlSchema["contents"].push(this.relationTransformation(nodeCopy, relCount, 0,0));
+                relCount += 2;
+              } 
               
-              if (index <= node[key].length)
+              if (!(key === "from" && opositeIndex === false))
+              {
+                ontoUmlSchema["contents"].push(this.relationTransformation(nodeCopy2, relCount,0,0));
+                relCount += 2; 
+              } 
+ 
+              if (index < node[this.getOpositeDirection(key)].length - 1)
               {
                  opositeIndex = index; 
+              }
+              else
+              {
+                 opositeIndex = false; 
               }
             }
           }
@@ -141,7 +166,7 @@ export default class OntoScheController {
         const schemas = require('ontouml-schema');
         const Ajv = require('ajv');
         const validator = new Ajv().compile(schemas.getSchema(schemas.ONTOUML_2));
-        this.ontoModel = this.initJson();
+        // this.ontoModel = this.initJson();
        
         const isValid = validator(ontoUmlSchema);
 
@@ -265,127 +290,22 @@ export default class OntoScheController {
 
 
     }
-
+/*
     initJson()
     {
       return JSON.parse(`[
         {
           "type": "relation",
-          "ontoType": "Characterization",
-          "from": [
-            "http://lod2-dev.vse.cz/data/puromodels#Book"
-          ],
-          "to": [
-            "http://lod2-dev.vse.cz/data/puromodels#Topic"
-          ],
-          "uri": "http://lod2-dev.vse.cz/data/puromodels#has_topic",
-          "label": "has_topic",
-          "fromType": [
-            "1"
-          ],
-          "toType": [
-            "1"
-          ],
-          "fromRelation": []
-        },
-        {
-          "uri": "http://lod2-dev.vse.cz/data/puromodels#Book",
-          "label": "Book",
-          "ontoType": "Kind",
-          "puroType": "BType",
-          "fromRelation": [
-            "http://lod2-dev.vse.cz/data/puromodels#has_topic",
-            "http://lod2-dev.vse.cz/data/puromodels#published_in"
-          ],
-          "direction": [
-            "from",
-            "from"
-          ],
-          "from": [
-            null
-          ],
-          "to": [
-            null
-          ],
-          "type": "Class",
-          "branchIndex": [
-            1
-          ]
-        },
-        {
-          "uri": "http://lod2-dev.vse.cz/data/puromodels#Topic",
-          "label": "Topic",
-          "ontoType": "Mode",
-          "puroType": "BType",
-          "fromRelation": [
-            "http://lod2-dev.vse.cz/data/puromodels#has_topic"
-          ],
-          "direction": [
-            "to"
-          ],
-          "from": [
-            null
-          ],
-          "to": [
-            null
-          ],
-          "type": "Class",
-          "branchIndex": [
-            1
-          ]
-        },
-        {
-          "type": "relation",
-          "ontoType": "Generalization",
-          "from": [
-            "http://lod2-dev.vse.cz/data/puromodels#Topic"
-          ],
-          "to": [
-            "http://lod2-dev.vse.cz/data/puromodels#DDC_Topic"
-          ],
-          "uri": "http://lod2-dev.vse.cz/data/ontomodels/relation/Generalization/TopicDDC_Topic",
-          "label": "nazev",
-          "fromType": [
-            ""
-          ],
-          "toType": [
-            ""
-          ],
-          "fromRelation": []
-        },
-        {
-          "uri": "http://lod2-dev.vse.cz/data/puromodels#DDC_Topic",
-          "label": "DDC_Topic",
-          "ontoType": "Subkind",
-          "puroType": "BType",
-          "fromRelation": [
-            "http://lod2-dev.vse.cz/data/puromodels#has_topic"
-          ],
-          "direction": [
-            "to"
-          ],
-          "from": [
-            null
-          ],
-          "to": [
-            null
-          ],
-          "type": "Class",
-          "branchIndex": [
-            1
-          ]
-        },
-        {
-          "type": "relation",
           "ontoType": "Relator",
           "from": [
-            "http://lod2-dev.vse.cz/data/ontomodels#q"
+            "http://lod2-dev.vse.cz/data/ontomodels#fsd"
           ],
           "to": [
-            "http://lod2-dev.vse.cz/data/puromodels#Location"
+            "http://lod2-dev.vse.cz/data/ontomodels#wqe",
+            "http://lod2-dev.vse.cz/data/ontomodels#vcxv"
           ],
-          "uri": "http://lod2-dev.vse.cz/data/puromodels#published_in",
-          "label": "published_in",
+          "uri": "http://lod2-dev.vse.cz/data/puromodels#offers",
+          "label": "offers",
           "fromType": [
             [
               "1",
@@ -396,105 +316,24 @@ export default class OntoScheController {
             [
               "1",
               "1"
+            ],
+            [
+              "1",
+              "1"
             ]
           ],
           "fromRelation": []
         },
         {
-          "type": "relation",
-          "ontoType": "Generalization",
-          "from": [
-            "http://lod2-dev.vse.cz/data/puromodels#Book"
-          ],
-          "to": [
-            "http://lod2-dev.vse.cz/data/ontomodels#q"
-          ],
-          "uri": "http://lod2-dev.vse.cz/data/ontomodels/relation/Generalization/Bookq",
-          "label": "nazev",
-          "fromType": [
-            ""
-          ],
-          "toType": [
-            ""
-          ],
-          "fromRelation": []
-        },
-        {
-          "uri": "http://lod2-dev.vse.cz/data/ontomodels#q",
-          "label": "q",
-          "ontoType": "Role",
-          "puroType": false,
-          "fromRelation": [
-            "http://lod2-dev.vse.cz/data/puromodels#published_in"
-          ],
-          "direction": [
-            "from"
-          ],
-          "from": [
-            null
-          ],
-          "to": [
-            null
-          ],
-          "type": "Class",
-          "branchIndex": [
-            1
-          ]
-        },
-        {
-          "uri": "http://lod2-dev.vse.cz/data/ontomodels#w",
-          "label": "w",
-          "ontoType": "Datatype",
-          "puroType": "BValue",
-          "fromRelation": [
-            {
-              "token": "uri",
-              "value": "http://lod2-dev.vse.cz/data/puromodels#published_in"
-            }
-          ],
-          "direction": [
-            "from"
-          ],
-          "from": [
-            null
-          ],
-          "to": [
-            null
-          ],
-          "type": "Class",
-          "branchIndex": [
-            null
-          ]
-        },
-        {
-          "type": "relation",
-          "ontoType": "connect",
-          "from": [
-            "http://lod2-dev.vse.cz/data/puromodels#published_in"
-          ],
-          "to": [
-            "http://lod2-dev.vse.cz/data/ontomodels#w"
-          ],
-          "uri": "http://lod2-dev.vse.cz/data/ontomodels/relation/connect/published_inw",
-          "label": "nazev",
-          "fromType": [
-            "*"
-          ],
-          "toType": [
-            "*"
-          ],
-          "fromRelation": []
-        },
-        {
-          "uri": "http://lod2-dev.vse.cz/data/puromodels#Location",
-          "label": "Location",
-          "ontoType": "Role",
+          "uri": "http://lod2-dev.vse.cz/data/puromodels#Business_Entity",
+          "label": "Business_Entity",
+          "ontoType": "Kind",
           "puroType": "BType",
           "fromRelation": [
-            "http://lod2-dev.vse.cz/data/puromodels#published_in"
+            "http://lod2-dev.vse.cz/data/puromodels#offers"
           ],
           "direction": [
-            "to"
+            "from"
           ],
           "from": [
             null
@@ -505,18 +344,19 @@ export default class OntoScheController {
           "type": "Class",
           "branchIndex": [
             1
-          ]
+          ],
+          "origUri": "first"
         },
         {
           "type": "relation",
           "ontoType": "Generalization",
           "from": [
-            "http://lod2-dev.vse.cz/data/ontomodels#e"
+            "http://lod2-dev.vse.cz/data/puromodels#Business_Entity"
           ],
           "to": [
-            "http://lod2-dev.vse.cz/data/puromodels#Location"
+            "http://lod2-dev.vse.cz/data/ontomodels#fsd"
           ],
-          "uri": "http://lod2-dev.vse.cz/data/ontomodels/relation/Generalization/eLocation",
+          "uri": "http://lod2-dev.vse.cz/data/ontomodels/relation/Generalization/Business_Entityfsd",
           "label": "nazev",
           "fromType": [
             ""
@@ -527,12 +367,35 @@ export default class OntoScheController {
           "fromRelation": []
         },
         {
-          "uri": "http://lod2-dev.vse.cz/data/ontomodels#e",
-          "label": "e",
-          "ontoType": "Kind",
+          "uri": "http://lod2-dev.vse.cz/data/ontomodels#fsd",
+          "label": "fsd",
+          "ontoType": "Role",
           "puroType": false,
           "fromRelation": [
-            "http://lod2-dev.vse.cz/data/puromodels#published_in"
+            "http://lod2-dev.vse.cz/data/puromodels#offers"
+          ],
+          "direction": [
+            "from"
+          ],
+          "from": [
+            null
+          ],
+          "to": [
+            null
+          ],
+          "type": "Class",
+          "branchIndex": [
+            1
+          ],
+          "origUri": ""
+        },
+        {
+          "uri": "http://lod2-dev.vse.cz/data/puromodels#Territory",
+          "label": "Territory",
+          "ontoType": "Kind",
+          "puroType": "BType",
+          "fromRelation": [
+            "http://lod2-dev.vse.cz/data/puromodels#offers"
           ],
           "direction": [
             "to"
@@ -546,8 +409,126 @@ export default class OntoScheController {
           "type": "Class",
           "branchIndex": [
             1
-          ]
+          ],
+          "origUri": "first"
+        },
+        {
+          "type": "relation",
+          "ontoType": "Generalization",
+          "from": [
+            "http://lod2-dev.vse.cz/data/puromodels#Territory"
+          ],
+          "to": [
+            "http://lod2-dev.vse.cz/data/ontomodels#wqe"
+          ],
+          "uri": "http://lod2-dev.vse.cz/data/ontomodels/relation/Generalization/Territorywqe",
+          "label": "nazev",
+          "fromType": [
+            ""
+          ],
+          "toType": [
+            ""
+          ],
+          "fromRelation": []
+        },
+        {
+          "uri": "http://lod2-dev.vse.cz/data/ontomodels#wqe",
+          "label": "wqe",
+          "ontoType": "Role",
+          "puroType": false,
+          "fromRelation": [
+            "http://lod2-dev.vse.cz/data/puromodels#offers",
+            "http://lod2-dev.vse.cz/data/puromodels#offers",
+            "http://lod2-dev.vse.cz/data/puromodels#offers"
+          ],
+          "direction": [
+            "to",
+            "to",
+            "to"
+          ],
+          "from": [
+            null
+          ],
+          "to": [
+            null
+          ],
+          "type": "Class",
+          "branchIndex": [
+            1,
+            1,
+            1
+          ],
+          "origUri": ""
+        },
+        {
+          "uri": "http://lod2-dev.vse.cz/data/puromodels#ReleaseType",
+          "label": "ReleaseType",
+          "ontoType": "Kind",
+          "puroType": "BType",
+          "fromRelation": [
+            "http://lod2-dev.vse.cz/data/puromodels#offers"
+          ],
+          "direction": [
+            "to"
+          ],
+          "from": [
+            null
+          ],
+          "to": [
+            null
+          ],
+          "type": "Class",
+          "branchIndex": [
+            2
+          ],
+          "origUri": "first"
+        },
+        {
+          "type": "relation",
+          "ontoType": "Generalization",
+          "from": [
+            "http://lod2-dev.vse.cz/data/puromodels#ReleaseType"
+          ],
+          "to": [
+            "http://lod2-dev.vse.cz/data/ontomodels#vcxv"
+          ],
+          "uri": "http://lod2-dev.vse.cz/data/ontomodels/relation/Generalization/ReleaseTypevcxv",
+          "label": "nazev",
+          "fromType": [
+            ""
+          ],
+          "toType": [
+            ""
+          ],
+          "fromRelation": []
+        },
+        {
+          "uri": "http://lod2-dev.vse.cz/data/ontomodels#vcxv",
+          "label": "vcxv",
+          "ontoType": "Role",
+          "puroType": false,
+          "fromRelation": [
+            "http://lod2-dev.vse.cz/data/puromodels#offers",
+            "http://lod2-dev.vse.cz/data/puromodels#offers"
+          ],
+          "direction": [
+            "to",
+            "to"
+          ],
+          "from": [
+            null
+          ],
+          "to": [
+            null
+          ],
+          "type": "Class",
+          "branchIndex": [
+            2,
+            2
+          ],
+          "origUri": ""
         }
       ]`); 
     }
+    */
 }

@@ -1,43 +1,42 @@
 {  
   "lastTypes":["Kind", "Collective", "Category"], 
-  "iframeURL": "http://localhost/PURO-Modeler-master/?model=MODELID&readOnly=1", 
-  "modelURL": "http://localhost/PURO-Modeler-master/server/rdf-export/MODELID.rdf",
+  "iframeURL": "http://protegeserver.cz/purom5/?model=MODELID&readOnly=1", 
+  "modelURL": "http://protegeserver.cz/purom5/server/rdf-export/MODELID.rdf",
 
   "classes":[
-    "Kind", "Subkind","Phase","Role", "Collective", "Quantity", "Relator","Category","RoleMixin","Mixin","Mode","Quality", "None"
+    "Kind", "Subkind","Phase","Role", "Collective", "Quantity", "Relator",
+    "Category", "RoleMixin","Mixin","Mode","Quality", "None"
   ],
 
   "relations":[
      {"formal":"simleLine"}, {"material":"simleLine"},{"Generalization":"arrowLine"},{"mediation": "simpleLine", "showType": true}, {"Characterization": "simpleLine", "showType": true}, 
-     {"derivation": "dashedLine"}, {"Structuration": "simpleLine", "showType": true}, {"part-whole-shared": "aggregation"}, {"part-whole-exclusive": "composition"},
+     {"derivation": "dashedLine"}, {"structuration": "simpleLine", "showType": true}, {"part-whole-shared": "aggregation"}, {"part-whole-exclusive": "composition"},
      {"componentOf": "composition"},{"containment": "simpleLine"}, {"memberOf-F": "composition", "showType":true},{"memberOf-B": "aggregation"},
      {"subCollectionOf": "composition"}, {"subQuantityOf": "composition"}, {"connect": "simpleLine"}
   ],
 
 
-  "bRelationRules": [
-    {"offer": ["Characterization","Relator"], "question":"Which type is relation VAL?"}
-  ],
+  "bRelationRules": ["Characterization","Relator"]
+  ,
 
- 
-  
   
   "relationRules":[
     {"from": ["Kind", "Subkind"], "to": ["Role"], "offer":["Generalization"]},
-    {"from": ["Kind"], "to": ["Role"], "offer":["Generalization"]},
     {"from": ["Mode"], "to":["Subkind","Kind","Mode", "Role"], "offer":["Generalization"]},
     {"from": ["Kind","Subkind"], "to": ["Subkind"], "offer":["Generalization"]},
-    {"from": ["Collective"], "to": ["Subkind","Kind", "Role"], "offer": ["memberOf-F"], "fromT": ["*","1","0"], "toT": ["*","1","0"]},
-    {"from": ["Datatype"], "to":["Datatype"], "offer":["Characterization","Structuration"], "fromT": ["*","1","0"], "toT": ["*","1","0"] },
-    {"from": ["*"], "to":["Datatype"], "offer":["connect"], "fromT": ["*","1","0"], "toT": ["*","1","0"] },
-    {"from": ["Category"], "to":["*"], "offer":["Generalization"]}
+    {"from": ["Collective"], "to": ["Subkind","Kind", "Role"], 
+      "offer": ["memberOf-F"], "fromT": ["1..*","1","*"], "toT": ["1..*","1","*"]},
+    {"from": ["*"], "to":["Datatype"], "offer":["connect"], 
+      "fromT": ["1","*", "1..*"], "toT": ["1","*","1..*"] },
+    {"from": ["Category"], "to":["*"], "offer":["Generalization"]},
+    {"from": ["Quality"], "to":["Quality"], "offer":["structuration"]}
   ],
 
   "commonRules":[
       {"childPuro": ["none"], "fatherOnto": ["Mode"], "connection": 0, "offer": ["Kind","Subkind","Role","Mode","None"]},
       {"childPuro": ["none"], "fatherOnto": ["Role"], "connection": 0, "offer": ["Kind", "Subkind", "Role", "Collective", "None"] },
       {"childPuro": ["none"], "fatherOnto": ["Subkind"], "connection": 0, "offer": ["Kind", "Subkind", "Collective", "None"] },
-      {"childPuro": ["none"], "fatherOnto": ["Kind"], "connection": 0, "offer": ["Subkind"]},
+      {"childPuro": ["none"], "fatherOnto": ["Kind"], "connection": 0, "offer": ["Subkind", "Mode", "None"]},
       {"childPuro": ["none"], "fatherOnto": ["Datatype"], "connection": 0, "offer": ["Datatype", "None"] },
       {"childPuro": ["none"], "fatherOnto": ["NoRelation"], "connection": 0, "offer": ["Kind", "Role"] }
         
@@ -48,9 +47,11 @@
     {"type": "BType", "question": "Which type is a VAL?"},
     {"type": "instance", "question": "Which ontoUML element represents instance VAL?"},
     {"type": "bTypeChild", "question": "Which element represents child of the VAL?"},
-    {"type": "none", "question": "Which element plays TYPE to REL?"},
-    {"type": "singleUniv", "question": "What is the TYPE of VAL?"},
-    {"type": "moreThanOne", "question": "What is another TYPE of VAL?"}
+    {"type": "moreThanOne", "question": "What is another TYPE of VAL?"},
+    {"type": "relSpecific", "question": "In term of VAL relationship."},
+    {"type": "bRelation", "question":"Which type is relation VAL?"},
+    {"type": "valuations", "question": "Which Datatype represents VAL?"},
+    {"type": "singleUniv", "question": "What is the TYPE of VAL?"}
   ],
   
   
@@ -60,30 +61,34 @@
       "2": {"Kind": ["Subkind", "Role"], "Subkind": ["Subkind","Role"]},
       "3": {"Subkind": ["Role"]}
     },
-    {"key" : "to","bTypeNumber": ["1","2"], "offer": ["Kind", "Role", "Category", "Collective"],
+    {"key" : "to","bTypeNumber": ["1","2","3","4","5","6"], "offer": ["Kind", "Role", "Category", "Collective"],
       "1": {"Kind": ["Role", "Subkind"], "Collective": ["Kind", "Subkind", "Role"], "Category":["Kind"], "Subkind":["Role","Subkind","None"]},
       "2": {"Kind": ["Subkind", "Role", "None"], "Subkind": ["Subkind", "Role", "None"]},
       "3": {"Subkind": ["Role","None"]}
     },
-    {"key": "cardinality", "fromT": [1, "1..*"], "toT": [1,"1..*"]}
+    {"key": "cardinality", "fromT": [1, "1..*", "*"], "toT": [1,"1..*", "*"]}
   ],
   
   "Characterization":[
     {"key": "from", "bTypeNumber": ["1","2"], "offer": ["Kind", "Collective", "Category"],
     "1": {"Collective": ["Kind", "Subkind"], "Category": ["Kind","Subkind"], "Kind":["Subkind", "None"]}},
-    {"key" : "to","offer": ["Mode", "Datatype"]},
-    {"key": "cardinality", "fromT": [1], "toT": [1,"*"]}
+    {"key" : "to","offer": ["Mode", "Quality"]},
+    {"key": "cardinality", "fromT": [1], "toT": [1,"1..*"]}
   ],
-
 
 
 
   "Mode":[
     {"key": "superType", "type": []},
-    {"key": "subType", "type": ["Kind","Subkind","Mode","Role", "None"]}
+    {"key": "subType", "type": []}
     ],
 
-
+    "Quality":[
+      {"key": "superType", "type": []},
+      {"key": "subType", "type": []},
+      {"key": "connect", "type": ["Quality", "None"]},
+      {"key": "connected", "type": ["Quality"], "connect":["Quality"], "moreThanOne": true, "mincCountount":2 , "maxCount": 5}
+      ],
   "Role":[
     {"key": "superType", "type": ["Kind", "Subkind", "Mode","Collective", "None"]},
     {"key": "subType", "type": []},
@@ -100,7 +105,7 @@
   "Kind":[
     {"key": "superType", "type": []},
     {"key": "subType", "type": []},
-    {"key": "superTyped", "type": ["Collective"], "moreThanOne": true, "count":2}
+    {"key": "superTyped", "type": ["Collective"], "moreThanOne": true, "mincCountount":2 , "maxCount": 5}
   ],
   "Category":[
     {"key": "superType", "type": []},
@@ -121,7 +126,7 @@
     {"key": "superType", "type": ["Kind", "Subkind"]},
     {"key": "subType", "type": []},
     {"key": "connect", "type": []},
-    {"key": "moreThanOne", "count": 2} 
+    {"key": "moreThanOne", "mincCountount":2 , "maxCount": 5} 
    ]
   }
 

@@ -41,8 +41,9 @@ export default class OntoModelController extends MainController {
             }    
         }
         else
-        {
-            uri = ontoUri + elName; 
+        { 
+            //koks
+            if (nameWasChange) this.updateOntoModel(uri, "label",elName);
             this.updateOntoModel(uri, "fromRelation",relationName);
             this.updateOntoModel(uri, "direction",direction);
             this.updateOntoModel(uri, "branchIndex",branchIndex);
@@ -280,25 +281,26 @@ export default class OntoModelController extends MainController {
 
     
 
-    getLastElementUri = (origin, direction) => 
+    getLastElementUri = (origin, direction, branchIndex) => 
     {
-        var uri; 
         for (let i = this.ontoModel.length - 1; i >= 0; i--) 
         {
-
             for (let j = 0; j < this.ontoModel[i].fromRelation.length; j++) {
                
-                if (this.ontoModel[i].fromRelation[j] === origin && this.ontoModel[i].direction[j] === direction && this.ontoModel[i].ontoType !== "Datatype")
+                if ((this.ontoModel[i].fromRelation[j] === origin && this.ontoModel[i].branchIndex.includes(branchIndex) && this.ontoModel[i].direction[j] === direction && this.ontoModel[i].ontoType !== "Datatype"))
                 {
-                    uri = this.ontoModel[i].uri;
-                    return uri;
+                    return this.ontoModel[i].uri;
                 }
-                else if (this.ontoModel[i].fromRelation[j] === origin && direction === undefined)
+                else if (this.ontoModel[i].fromRelation[j] === origin && this.ontoModel[i].direction[j] === direction && this.ontoModel[i].ontoType !== "Datatype" && branchIndex === undefined)
                 {
-                    uri = this.ontoModel[i].uri;
-                    return uri; 
+             
+                    return this.ontoModel[i].uri;
                 }
-                else if(origin === undefined && direction === undefined)
+                else if (this.ontoModel[i].fromRelation[j] === origin && direction === undefined && branchIndex === undefined)
+                {
+                    return this.ontoModel[i].uri; 
+                }
+                else if(origin === undefined && direction === undefined  && branchIndex === undefined)
                 {
                     return this.ontoModel[i].uri;
                 }
@@ -310,6 +312,7 @@ export default class OntoModelController extends MainController {
 
     getElementInRelRow (lastElUri)
     {
+        
         const relElements = this.getElementInRelation(lastElUri,"*","from",false); 
         if (relElements.length === 0)
         {
@@ -317,8 +320,7 @@ export default class OntoModelController extends MainController {
         }
         
         const fatherChildren = this.getElementInRelation(relElements[0].element.uri,"*","to",this.getOntoElement(lastElUri).ontoType); 
-        console.log(fatherChildren)
-        console.log(fatherChildren[0].element.uri)
+
         return fatherChildren[0].element.uri; 
 
     }
@@ -351,15 +353,16 @@ export default class OntoModelController extends MainController {
         return result;
     }
 
-    getRelationElements = (elName, element, selectedUri, relationUri, addRulesLenght, lastEl, puroType, ontoUri, ruleKey, nameWasChange, moreBranches) => 
+    getRelationElements = (elName, element, selectedUri, relationUri, addRulesLenght, lastEl, puroType, isElInstance, ruleKey, nameWasChange, branchesCount) => 
     {
+  
         const ontoEl = this.getOntoElement(selectedUri);
-        if (elName !== "" && puroType !== "dataType" && nameWasChange === false && (element !== false || ontoEl !== false))
-        {
+   
+        if (elName !== "" && puroType !== "dataType" && nameWasChange === false && isElInstance === false && (element !== false || ontoEl !== false))
+        {    
            
             let father;
             let passEl; 
-            
             if (puroType === "superType")
             {
                 father = this.ontoUri + elName;
@@ -372,9 +375,12 @@ export default class OntoModelController extends MainController {
             }
             else
             {
+
                 if (element !== false)
                 {
+                   
                     father = element.father[0] === undefined ? element.uri.value : element.father[0];
+                   
                 }
                 else
                 {
@@ -397,10 +403,10 @@ export default class OntoModelController extends MainController {
         }
         else if (puroType.includes("elementSelection") || (element !== false && this.getOntoElement(element.father[0]) !== false))
         {   
-      
-            let elementFather = this.getOntoElement(element.father[0]);
-            if (puroType.includes("invert") || !puroType.includes("elementSelection"))
+            let elementFather = "foundFather" in element ? element.foundFather : this.getOntoElement(element.father[0]);
+            if ((puroType.includes("invert") || !puroType.includes("elementSelection")) && !puroType.includes("classSelection"))
             {
+ 
                 return [element.uri.value, elementFather.uri];
             }
             else
@@ -409,35 +415,37 @@ export default class OntoModelController extends MainController {
             
             }
         }
-        else if((addRulesLenght === 0 && lastEl === true) || element === false )
+        else if((addRulesLenght === 0 && lastEl === true) || element === false || isElInstance === true)
         {
             //koko
+            
             let lastRelElement = this.getLastElement(relationUri);
             lastRelElement = this.getOntoElement(this.getElementInRelRow(lastRelElement.uri))
           
-            const passEl = (element === false) ? this.ontoUri + elName : selectedUri;
+            const passEl = (element === false || isElInstance === true) ? this.ontoUri + elName : selectedUri;
 
-            let lastElUri = this.getLastElementUri(relationUri,ruleKey);
+            let lastElUri = this.getLastElementUri(relationUri,ruleKey, branchesCount);
             lastElUri = this.getElementInRelRow(lastElUri); 
     
-            if (lastRelElement !== false && (lastRelElement.direction[lastRelElement.direction.length - 1] !== ruleKey || moreBranches === true) && addRulesLenght === 0)
+            if (lastRelElement !== false && (lastRelElement.direction[lastRelElement.direction.length - 1] !== ruleKey || branchesCount > 1) && addRulesLenght === 0)
             {
-                if (!this.isRelationExist(lastElUri,passEl) &&  this.getOntoBranch(relationUri, ruleKey).length > 1)
+             
+                if (lastElUri !== false && !this.isRelationExist(lastElUri,passEl) &&  this.getOntoBranch(relationUri, ruleKey).length > 1)
                 {
                     return [lastElUri, passEl];
                 }
-    
+              
                 this.updateOntoModel(relationUri,ruleKey,passEl, false);
-                
                 return relationUri; 
             }
-            else if (element === false || lastRelElement !== false)
+            else if (element === false || lastRelElement !== false || isElInstance === true)
             {
+                
                 return [lastRelElement.uri, passEl];
             }
             
         }  
-     
+        
     }
 
     checkDuplicity (label) 
@@ -530,14 +538,15 @@ export default class OntoModelController extends MainController {
         }
         return false; 
     }
-    getOntoBranch(relation, key)
+    getOntoBranch(relation, key, branchIndex)
     {
         let returnArr = [];
+        branchIndex = branchIndex === undefined ? false : branchIndex;
         for (let el of this.ontoModel)
         {
             for (let index in el.fromRelation)
             {
-                if (el.fromRelation[index] === relation && el.direction[index] === key)
+                if (el.fromRelation[index] === relation && el.direction[index] === key && (branchIndex === false || el.branchIndex.includes(branchIndex)))
                 {
                     returnArr.push(el);
                 }

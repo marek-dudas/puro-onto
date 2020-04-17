@@ -1,79 +1,73 @@
-<rdf:RDF
-    xmlns:rdf= "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    xmlns:puro="http://lod2-dev.vse.cz/ontology/puro#"
-    xmlns:pm="http://lod2-dev.vse.cz/data/puromodels#"
-    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
-    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Book">
-        <rdfs:label>Book</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-    </puro:BType>
-
-    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#The_history_of_dogs">
-        <rdfs:label>The_history_of_dogs</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#published_in"/>
-        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#has_topic"/>
-        <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Book"/>
-    </puro:BType>
-    <puro:BObject rdf:about="http://lod2-dev.vse.cz/data/puromodels#Mareks_copy_of_The_history_of_dogs">
-        <rdfs:label>Mareks_copy_of_The_history_of_dogs</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-        <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#The_history_of_dogs"/>
-    </puro:BObject>
-    <puro:BRelation rdf:about="http://lod2-dev.vse.cz/data/puromodels#published_in">
-        <rdfs:label>published_in</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#when_May_6"/>
-        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Prague"/>
-        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#when"/>
-     
-    </puro:BRelation>
-
-    <puro:BObject rdf:about="http://lod2-dev.vse.cz/data/puromodels#Prague">
-        <rdfs:label>Prague</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-        <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Location"/>
-    </puro:BObject>
-    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Location">
-        <rdfs:label>Location</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-    </puro:BType>
-    <puro:BAttribute rdf:about="http://lod2-dev.vse.cz/data/puromodels#when">
-        <rdfs:label>when</rdfs:label>
-    </puro:BAttribute>
-    <puro:BValuation rdf:about="http://lod2-dev.vse.cz/data/puromodels#when_May_6">
-        <rdfs:label>when_May_6</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#when"/>
-    </puro:BValuation>
-    <puro:BObject rdf:about="http://lod2-dev.vse.cz/data/puromodels#02504">
-        <rdfs:label>02504</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-        <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#DDC_Topic"/>
-    </puro:BObject>
-    <puro:BRelation rdf:about="http://lod2-dev.vse.cz/data/puromodels#has_topic">
-        <rdfs:label>has_topic</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-        <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#02504"/>
-    </puro:BRelation>
-    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#DDC_Topic">
-        <rdfs:label>DDC_Topic</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-        <puro:subTypeOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Topic"/>
-    </puro:BType>
-    <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Topic">
-        <rdfs:label>Topic</rdfs:label>
-        <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass"/>
-        <puro:rigid>true</puro:rigid>
-    </puro:BType>
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:pm="http://lod2-dev.vse.cz/data/puromodels#" xmlns:puro="http://lod2-dev.vse.cz/ontology/puro#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+   <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Book">
+      <rdfs:label>Book</rdfs:label>
+      <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
+      <puro:rigid>true</puro:rigid>
+   </puro:BType>
+   <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#The_history_of_dogs">
+      <rdfs:label>The_history_of_dogs</rdfs:label>
+      <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
+      <puro:rigid>true</puro:rigid>
+      <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#published_in" />
+      <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#has_topic" />
+      <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Book" />
+   </puro:BType>
+   <puro:BObject rdf:about="http://lod2-dev.vse.cz/data/puromodels#Mareks_copy_of_The_history_of_dogs">
+      <rdfs:label>Mareks_copy_of_The_history_of_dogs</rdfs:label>
+      <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
+      <puro:rigid>true</puro:rigid>
+      <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#The_history_of_dogs" />
+   </puro:BObject>
+   <puro:BRelation rdf:about="http://lod2-dev.vse.cz/data/puromodels#published_in">
+      <rdfs:label>published_in</rdfs:label>
+      <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
+      <puro:rigid>true</puro:rigid>
+      <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#when_May_6" />
+      <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Prague" />
+      <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#when" />
+   </puro:BRelation>
+   <puro:BObject rdf:about="http://lod2-dev.vse.cz/data/puromodels#Prague">
+      <rdfs:label>Prague</rdfs:label>
+      <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
+      <puro:rigid>true</puro:rigid>
+      <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Location" />
+   </puro:BObject>
+   <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Location">
+      <rdfs:label>Location</rdfs:label>
+      <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
+      <puro:rigid>true</puro:rigid>
+   </puro:BType>
+   <puro:BAttribute rdf:about="http://lod2-dev.vse.cz/data/puromodels#when">
+      <rdfs:label>when</rdfs:label>
+   </puro:BAttribute>
+   <puro:BValuation rdf:about="http://lod2-dev.vse.cz/data/puromodels#when_May_6">
+      <rdfs:label>when_May_6</rdfs:label>
+      <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
+      <puro:rigid>true</puro:rigid>
+      <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#when" />
+   </puro:BValuation>
+   <puro:BObject rdf:about="http://lod2-dev.vse.cz/data/puromodels#02504">
+      <rdfs:label>02504</rdfs:label>
+      <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
+      <puro:rigid>true</puro:rigid>
+      <puro:instanceOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#DDC_Topic" />
+   </puro:BObject>
+   <puro:BRelation rdf:about="http://lod2-dev.vse.cz/data/puromodels#has_topic">
+      <rdfs:label>has_topic</rdfs:label>
+      <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
+      <puro:rigid>true</puro:rigid>
+      <puro:linkedTo rdf:resource="http://lod2-dev.vse.cz/data/puromodels#02504" />
+   </puro:BRelation>
+   <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#DDC_Topic">
+      <rdfs:label>DDC_Topic</rdfs:label>
+      <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
+      <puro:rigid>true</puro:rigid>
+      <puro:subTypeOf rdf:resource="http://lod2-dev.vse.cz/data/puromodels#Topic" />
+   </puro:BType>
+   <puro:BType rdf:about="http://lod2-dev.vse.cz/data/puromodels#Topic">
+      <rdfs:label>Topic</rdfs:label>
+      <puro:modelingStyle rdf:resource="http://lod2-dev.vse.cz/ontology/puro#objectPropSubclass" />
+      <puro:rigid>true</puro:rigid>
+   </puro:BType>
 </rdf:RDF>

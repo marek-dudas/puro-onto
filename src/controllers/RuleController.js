@@ -4,7 +4,7 @@ export default class RuleController extends MainController {
     
 
     //ruleSelection queryTree, 
-    ruleSelection = (rules, key, element, previousElName, rule, queryTree) => 
+    ruleSelection = (rules, key, element, previousElName, rule, queryTree, relationLabel) => 
     {
         
         let commands; 
@@ -33,9 +33,8 @@ export default class RuleController extends MainController {
             let additionalQuestion = "";
             
             if (element.connect.length > 1)
-            {
-                const relationLabel = element.connect[]; 
-                additionalQuestion = "\n In term of "+relationLabel+" relationship.";
+            { 
+                additionalQuestion = "\n " + this.getQuestion(relationLabel, "relSpecific");
             }
             
             if (this.isElementInstace(element,queryTree))
@@ -95,13 +94,14 @@ export default class RuleController extends MainController {
         return false; 
     } 
 
-    moreThanOneRule (ontoController, element,count, check)
+    moreThanOneRule (ontoController, element,minCount,maxCount, check)
     {
-        const elInRelation = ontoController.getElementInRelation(element.uri,"*","from",false)[0];   
-    
-        if (ontoController.getElementInRelation(elInRelation.element.uri,elInRelation.relationType,"to", element.ontoType).length < count)
+        const elInRelation = ontoController.getElementInRelation(element.uri,"*","from",false)[0]; 
+        const childrenCount = ontoController.getElementInRelation(elInRelation.element.uri,elInRelation.relationType,"to", element.ontoType).length;
+        if (childrenCount < maxCount)
         {
-            check.push({key: "subType", types: [element.ontoType], element: elInRelation.element.uri, rule:{type:[element.ontoType],question:this.getQuestion(elInRelation.element,"moreThanOne")}}); 
+            const types = childrenCount < minCount ? [element.ontoType] : [element.ontoType, "None"]
+            check.push({key: "subType", types: types, element: elInRelation.element.uri, rule:{type:[element.ontoType],question:this.getQuestion(elInRelation.element,"moreThanOne")}}); 
         }
 
         return check; 
@@ -115,7 +115,7 @@ export default class RuleController extends MainController {
             let rules = this.rulesJson[element.ontoType];    
             let check = []; 
         
-            
+       
 
             //Tady by měla být pole jelikož to může být 1:N 
             // !!! Převod na metodu a úprava dle pravidel
@@ -127,6 +127,7 @@ export default class RuleController extends MainController {
                 connect: ontoController.getRelatedTypes(element.uri, "connect", false)
             };
 
+            console.log (elTypes.connect)
             
             for (let rule of rules)
             {
@@ -136,7 +137,7 @@ export default class RuleController extends MainController {
                 check = this.elementConsistencySelection(rule,elTypes.subType,"subType",element,check,rules,elTypes, ontoController);
                 if (rule.key === "moreThanOne")
                 {
-                    check = this.moreThanOneRule(ontoController,element,rule.count,check);
+                    check = this.moreThanOneRule(ontoController,element,rule.minCount,rule.maxCount,check);
                 }
             }
 
@@ -183,9 +184,9 @@ export default class RuleController extends MainController {
                                 check = this.elementConsAddSelection("superType",addRule,elTypes,check,element,allTypes);
                                 check = this.elementConsAddSelection("subType",addRule,elTypes,check,element,allTypes);
                                 check = this.elementConsAddSelection("connect",addRule,elTypes,check,element,allTypes);
-                                if ("moreThanOne" in addRule && addRule["moreThanOne"] === true)
+                                if ("moreThanOne" in addRule && addRule["moreThanOne"] === true && elTypes.length < 2)
                                 {
-                                    check = this.moreThanOneRule(ontoController,element,addRule.count,check);
+                                    check = this.moreThanOneRule(ontoController,element,addRule.mincCountount,addRule.maxCount,check);
                                 }
                             }
                         }
@@ -304,7 +305,7 @@ export default class RuleController extends MainController {
         /*
         if (selectedType in rule)
         {
-            alert("bam")
+            ("bam")
             console.log(rule)
             return rule[selectedType];
         }
@@ -324,9 +325,8 @@ export default class RuleController extends MainController {
     }
 
 
-    commonRuleSelection = (element, start, ontoModel) => 
+    commonRuleSelection = (element, fathers,start, ontoModel, fatheFound, addNone) => 
     {
-        let result = [];
 
         // tohle vyřeš na úrovni onto modelu!
         let fatherOnto = [];
@@ -338,13 +338,19 @@ export default class RuleController extends MainController {
             childPuroType.push(this.delUri(child));
         }
 
-        
-        for (let node of ontoModel)
+        if (fatheFound)
         {
-            if (element.father.includes(node.uri)) {
-                fatherOnto.push(node.ontoType);
+            fatherOnto.push(element.foundFather.ontoType); 
+        }
+        else
+        {
+            for (let node of ontoModel)
+            {
+                if (fathers.includes(node.uri)) {
+                    fatherOnto.push(node.ontoType);
+                }
+                
             }
-            
         }
 
         // Změnit!! 
@@ -371,8 +377,14 @@ export default class RuleController extends MainController {
                 {
                     type += "-invert"
                 }
-
-                // tady doplň máš i rule 
+                
+                const offerTypes = JSON.parse(JSON.stringify(rule.offer));
+                
+                if (addNone === true && !offerTypes.includes("None"))
+                {
+                    offerTypes.push("None");
+                }
+                
                 const question = "Which type is "+element.label.value+"?";
                 return this.createButtons(rule.offer,question, type,false, element.label.value);
             }

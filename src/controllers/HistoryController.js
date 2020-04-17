@@ -39,9 +39,6 @@ export default class HistoryController {
         {
             this.propertiesHistory[this.propertiesHistory.length-2]["queryTree"] = JSON.parse(JSON.stringify(lastProp["queryTree"]));
         }
-        console.log(this.propertiesHistory)
-        console.log(this.inputVariables)
-        console.log(this.ontoModelHistory)
         return {ontoModel: this.ontoModelHistory[this.ontoModelHistory.length-2], properties: this.propertiesHistory[this.propertiesHistory.length-2],
         inputVariables: this.inputVariables[this.inputVariables.length-1]};
     }
