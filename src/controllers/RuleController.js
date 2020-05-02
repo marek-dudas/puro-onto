@@ -4,9 +4,8 @@ export default class RuleController extends MainController {
     
 
     //ruleSelection queryTree, 
-    ruleSelection = (rules, key, element, previousElName, rule, queryTree, relationLabel) => 
+    ruleSelection = (rules, key, element, previousElName, rule, isElementInstance, relationLabel, countBtypes) => 
     {
-        
         let commands; 
         let additionalRules;
         let offerTypes;
@@ -21,7 +20,8 @@ export default class RuleController extends MainController {
         }
         else
         {
-            commands = this.getSpecificRule(rules,key);
+            console.log(rules)
+            commands = this.getSpecificRule(rules,key, false, countBtypes);
             //additionalRules = this.getAdditionalRule(commands,ontoType);
             //offerTypes = (additionalRules.length > 0 ) ? offerTypes = additionalRules : offerTypes = commands.offer;
             offerTypes = commands.offer   
@@ -37,62 +37,31 @@ export default class RuleController extends MainController {
                 additionalQuestion = "\n " + this.getQuestion(relationLabel, "relSpecific");
             }
             
-            if (this.isElementInstace(element,queryTree))
+            if (isElementInstance === true)
             {
                 needElName =true;
                 uri = element.uri.value;
-
-
-
-                question = this.rulesJson.questions[1].question.replace("VAL",element.label.value) + additionalQuestion;
+ 
+                question = this.getQuestion(element.label.value, "instance") + additionalQuestion;
             }
             else
             {
                 needElName = false;
                 uri = element.uri.value;
-                question = this.rulesJson.questions[0].question.replace("VAL",element.label.value) + additionalQuestion;
+                question = this.getQuestion(element.label.value, "BType") + additionalQuestion;
                 elName = element.label.value; 
             }
         }
         else
         {
-            //zjisti zda je chyby nebno ne 
             needElName = true;
+            question = this.getQuestion(previousElName, "bTypeChild");
 
-            //Třeba dodělat Replace!!
-
-            for (let q of this.rulesJson.questions)
-            {
-                if (q.type === "bTypeChild")
-                {
-                    question = q.question.replace("VAL", previousElName);
-                    break;
-                }
-            }
         }
        
         return this.createButtons(offerTypes,question, "classSelection",needElName,elName);
     }
 
-    isElementInstace = (element, queryTree) =>
-    {
-        for (let node of queryTree)
-        {
-           
-            if (element.uri.value === node.uri.value  )
-            {
-                for (let type of node.fatherTypeRelation)
-                {
-                    if (this.delUri(type) === "instanceOf")
-                    {
-                        return true; 
-                    }
-                }
-            
-            }
-        }
-        return false; 
-    } 
 
     moreThanOneRule (ontoController, element,minCount,maxCount, check)
     {
@@ -127,7 +96,6 @@ export default class RuleController extends MainController {
                 connect: ontoController.getRelatedTypes(element.uri, "connect", false)
             };
 
-            console.log (elTypes.connect)
             
             for (let rule of rules)
             {
@@ -176,10 +144,8 @@ export default class RuleController extends MainController {
                 {
                     if (additionalRules !== false)
                     {
-                      
                         for (let addRule of additionalRules)
                         {
-                            console.log(JSON.parse(JSON.stringify(addRule)))
                             if (addRule.type.some(r=> elTypes.includes(r))) {
                                 check = this.elementConsAddSelection("superType",addRule,elTypes,check,element,allTypes);
                                 check = this.elementConsAddSelection("subType",addRule,elTypes,check,element,allTypes);
@@ -247,44 +213,40 @@ export default class RuleController extends MainController {
     {
         let addRules = [];
         
-        bTypeNumber = bTypeNumber === undefined ? false : bTypeNumber; 
+        bTypeNumber = bTypeNumber === undefined ? false : bTypeNumber.toString(); 
         moreThanOne = moreThanOne === undefined ? false : moreThanOne; 
-        
+
         if (bTypeNumber !== false)
         {
             for (let node of rules)
             {
                 if (node.key === key &&  ("bTypeNumber" in node) && node.bTypeNumber.includes(bTypeNumber))
                 {
+                    
                     if (moreThanOne === true)
                     {
                         addRules.push(node);
                     }
                     else
                     {   
+                     
                         return node; 
                     }   
                 }
             }
 
-       
-        }
-            for (let node of rules)
+            if (moreThanOne === false && addRules < 1)
             {
-                
-                if (node.key === key)
-                {
-                    if (moreThanOne === true)
-                    {
-                        addRules.push(node);
-                    }
-                    else
-                    {   
-                        return node; 
-                    }   
-                }
+                addRules = this.findSimpleRule(rules,key,moreThanOne, true);
+                if (addRules.length === 1 && moreThanOne === false) return addRules[0]; 
             }
-        
+        }
+        else
+        {
+          addRules = this.findSimpleRule(rules,key,moreThanOne, false);
+          if (addRules.length === 1 && moreThanOne === false) return addRules[0]; 
+        }
+
 
 
         // Tady možná hvězda 
@@ -298,7 +260,31 @@ export default class RuleController extends MainController {
         }     
     }
 
+    findSimpleRule (rules, key, moreThanOne, last)
+    {
+        const returnArr = []; 
+        
+        for (let node of rules)
+        {
+            
+            if (node.key === key && (last === false || !("bTypeNumber" in node))) 
+            {
+                if (moreThanOne === true)
+                {
+                    returnArr.push(node);
+                }
+                else
+                {   
+                    return [node]; 
+                }   
+            }
+        }
 
+        return returnArr; 
+
+
+
+    }
 
     getAdditionalRule = (rule, selectedType, index) =>
     {
@@ -316,7 +302,6 @@ export default class RuleController extends MainController {
         */
         if (rule !== false && index.toString() in rule && selectedType in rule[index])
         {
-            console.log(rule[index][selectedType])
             return rule[index][selectedType]; 
         }
         
@@ -331,6 +316,8 @@ export default class RuleController extends MainController {
         // tohle vyřeš na úrovni onto modelu!
         let fatherOnto = [];
         let childPuroType = [];
+        let rules = "commonRules";
+        let types = "fatherOnto";
         //const connection =  element.connect.length > 0 ? true : false;  
         let type = "elementSelection"; 
         for (let child of element.childType)
@@ -340,6 +327,8 @@ export default class RuleController extends MainController {
 
         if (fatheFound)
         {
+            types = "childOnto";  
+            rules = "specialCasesRules";
             fatherOnto.push(element.foundFather.ontoType); 
         }
         else
@@ -353,27 +342,20 @@ export default class RuleController extends MainController {
             }
         }
 
-        // Změnit!! 
-        for (let rule of this.rulesJson.commonRules)
-        {
+        
 
-            /*((fatherOnto.some(r=> rule.fatherOnto.includes(r)) || (rule.fatherOnto.includes("none"))) &&
-            (element.childType.some(r=> rule.childPuro.includes(r) || 
-            (rule.childPuro.includes("none"))) 
-           ))
-            */
-            console.log(start === true)
-            console.log(rule.fatherOnto === "NoRelation")
-            console.log(rule.fatherOnto)
-           if (start === true && rule.fatherOnto[0] === "NoRelation")
+        // Změnit!! 
+        for (let rule of this.rulesJson[rules])
+        {
+           if (start === true && rule[types][0] === "NoRelation")
            {
              const question = "Which type is "+element.label.value+"?";
              return this.createButtons(rule.offer,question, type,false, element.label.value);
            }
-           else if ((fatherOnto.some(r=> rule.fatherOnto.includes(r)) || (rule.fatherOnto.includes("none"))))
-            {
-                
-                if ("invert" in rule && rule["invert"] === true)
+           else if ((fatherOnto.some(r=> rule[types].includes(r)) || (rule[types].includes("none"))))
+           {
+                //  nastav jako subtype
+                if (("invert" in rule && rule["invert"] === true) || fatheFound === true)
                 {
                     type += "-invert"
                 }

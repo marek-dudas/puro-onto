@@ -1,0 +1,16 @@
+ [
+    {
+        "@id":"http://example.com/people/Jan",
+        "http://xmlns.com/foaf/0.1/knows":[
+           {
+              "@id":"http://example.com/people/Pavel"
+           
+  }
+        
+  ]
+     
+  },
+     {
+        "@id":"http://example.com/people/Pavel"   
+  }
+  ]

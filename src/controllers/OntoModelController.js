@@ -279,7 +279,17 @@ export default class OntoModelController extends MainController {
        return false; 
     }
 
-    
+    getRelation(from, to)
+    {
+        for (let node of this.ontoModel)
+        {
+            if (node.type === "relation" && node.from.includes(from) && node.from.includes(to))
+            {
+                return node; 
+            }
+        }
+        return false;
+    }
 
     getLastElementUri = (origin, direction, branchIndex) => 
     {
@@ -293,7 +303,6 @@ export default class OntoModelController extends MainController {
                 }
                 else if (this.ontoModel[i].fromRelation[j] === origin && this.ontoModel[i].direction[j] === direction && this.ontoModel[i].ontoType !== "Datatype" && branchIndex === undefined)
                 {
-             
                     return this.ontoModel[i].uri;
                 }
                 else if (this.ontoModel[i].fromRelation[j] === origin && direction === undefined && branchIndex === undefined)

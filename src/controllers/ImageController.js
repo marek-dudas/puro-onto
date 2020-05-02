@@ -94,6 +94,8 @@ export default class ImagController extends MainController {
                         break; 
                     case "simpleline": code = " -- "; 
                         break; 
+                    case "simplearrow": code =" --> "
+                        break; 
                     case "dashedline": code = " .. "; 
                         break; 
                     case "composition": code = " *-- "; 

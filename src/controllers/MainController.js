@@ -46,16 +46,18 @@ export default class MainController{
 
     getQuestion(labelEL, key)
     {
-
+        
         for (let q of this.rulesJson.questions)
         {
-            
             if (q.type === key)
             {
+                
                 const replace = typeof labelEL === "string" ? labelEL : labelEL.label; 
                 return q.question.replace("VAL", replace); 
             }
         }
+
+        return false; 
     }
 
     createQuestion (unfinishedType, questions) 
@@ -91,12 +93,13 @@ export default class MainController{
         let index = 0; 
         for (let node of tree)
         {
-            if (this.delUri(node.type.value) === "BType" && !node.fatherTypeRelation.includes("http://lod2-dev.vse.cz/ontology/puro#instanceOf"))
+            // && !node.fatherTypeRelation.includes("http://lod2-dev.vse.cz/ontology/puro#instanceOf")
+            if (this.delUri(node.type.value) === "BType")
             {
                 index ++; 
             }
         }
-
+       
         return index; 
     }
    
