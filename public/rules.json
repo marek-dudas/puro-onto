@@ -66,7 +66,7 @@
       "3": {"Subkind": ["Role"]}
     },
     {"key" : "to","bTypeNumber": ["1","2"], "offer": ["Kind", "Role", "Category", "Collective"],
-      "1": {"Kind": ["Role", "Subkind"], "Collective": ["Kind", "Subkind", "Role"], "Category":["Kind"], "Subkind":["Role","Subkind","None"]},
+      "1": {"Kind": ["Subkind","Role"], "Collective": ["Kind", "Subkind", "Role"], "Category":["Kind"], "Subkind":["Role","Subkind","None"]},
       "2": {"Kind": ["Subkind", "Role", "None"], "Subkind": ["Role","Subkind", "None"]},
       "3": {"Subkind": ["Role","None"]}
     },
