@@ -30,8 +30,6 @@ export default class ImagController extends MainController {
                         {
                             graphCommand += this.findLabel(node.from[key]) +" "+ (node.fromType[key] ? '"'+node.fromType[key][0]+'"' : "") +" .. "+ (node.toType[key] ? '"'+node.fromType[key][1]+'"' : "") + " " + node.label +  " : <<Mediation>>\n";
                         }
-
-                      //  graphCommand += this.findLabel(node.from) +" "+ (fromT ? '"'+fromT[0]+'"' : "") +" .. "+ (toT ? '"'+fromT[1]+'"' : "") + " " + node.label +  " : <<Mediation>>\n"; 
                         
                         for (let key in node.to)
                         {

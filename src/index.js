@@ -12,14 +12,6 @@ import Iframe from 'react-iframe';
 
 
 
-
-
-
-
-//import RdfController from './controllers/RdfController.js';
-//import { thisTypeAnnotation } from "@babel/types";
-
-//přiřadit key k talčítkům -> zamyslet se nad využitím 
 class Layout extends React.Component {
   constructor(props) {
     super(props);
@@ -89,19 +81,6 @@ class Layout extends React.Component {
 
 
 
-class PuroModel extends React.Component {
-
-  // $("#iFrameId").contents().find("#yourDiv").empty();
-
-
-  render() {
-    return <iframe onLoad={this.loaded} title="puro-model" id="iframePuro" className="embed-responsive-item" src={this.props.iframeURL}></iframe>;
-  }
-
-
-}
-
-
 class QuestionPart extends React.Component {
 
   constructor(props) {
@@ -122,11 +101,6 @@ class QuestionPart extends React.Component {
     if (event !== undefined) {
       event.preventDefault();
     }
-
-    //window.addEventListener('unhandledrejection', function(event) {
-    //alert("Rule is not defined!\nOnly the first answer is correct! \nRules are not complete yet!\nPage will be reloaded!");
-    //window.location.reload(); 
-    //});
 
     this.eventController.getDefault(true).then(results => {
       this.setState({ undoActive: false, svgUrl: "", buttons: results.buttons, title: results.title, originalName: results.originalName, type: results.type, startTransform: false });
@@ -184,6 +158,8 @@ class QuestionPart extends React.Component {
        
         this.eventController.nextElement(selectedType, selectedUri, type, elName, nameWasChange).then(results => {
           
+          if (results === undefined || false) alert("Rule is not defined. \n Check rules.json")
+
           if (undo === false) {
             let properties = (Object.getOwnPropertyNames(this.eventController));
             let historyRecord = {};
@@ -222,7 +198,6 @@ class QuestionPart extends React.Component {
   assignProp = (prop) => {
 
     if (Array.isArray(prop) || typeof prop === 'object') {
-      //how to 
       return JSON.parse(JSON.stringify(prop));
     }
     else {
@@ -286,11 +261,11 @@ class QuestionPart extends React.Component {
           </button>
         <div className={this.state.startTransform ? "d-none" : ""}>
           <h3 className="questionTitle">{this.state.title}</h3>
-          <div className="optionButtons d-none d-md-block">
+          <div className="optionButtons  d-md-block">
             <div className="btn-group-vertical text-right">
-              <button type="button" className="btn btn-primary btnModal" onClick={this.handleChangeName} disabled={this.state.originalName === "" || this.state.type.includes("ontoRelation") || this.state.type.includes("end") || this.state.type === "nextBranchElements" || this.state.type === "needFather"}>{this.state.changeName === true && this.state.originalName !== "" ? "Set original name" : "Change name"}</button>
-              <button type="button" className="btn btn-primary btnModal" onClick={() => this.handleClick(undefined, undefined, "Undo")} disabled={!this.state.undoActive}>Undo</button>
-              <button type="button" className="btn btn-secondary btnModal" data-dismiss="modal" onClick={(e) => { if (window.confirm('Are you sure you want to cancel the transformation?')) window.location.reload(); }}>Cancel</button>
+              <button id = "changeNameBtn" type="button" className="btn btn-primary btnModal" onClick={this.handleChangeName} disabled={this.state.originalName === "" || this.state.type.includes("ontoRelation") || this.state.type.includes("end") || this.state.type === "nextBranchElements" || this.state.type === "needFather"}>{this.state.changeName === true && this.state.originalName !== "" ? "Set original name" : "Change name"}</button>
+              <button id = "undoBtn" type="button" className="btn btn-primary btnModal" onClick={() => this.handleClick(undefined, undefined, "Undo")} disabled={!this.state.undoActive}>Undo</button>
+              <button id = "cancelBtn" type="button" className="btn btn-secondary btnModal" data-dismiss="modal" onClick={(e) => { if (window.confirm('Are you sure you want to cancel the transformation?')) window.location.reload(); }}>Cancel</button>
             </div>
           </div>
           <div className={this.state.changeName === true ? 'col-md-6 mx-auto' : 'd-none'}>
@@ -314,6 +289,8 @@ class QuestionPart extends React.Component {
   }
 
 }
+
+
 
 class TypeButtons extends React.Component {
   constructor(props) {

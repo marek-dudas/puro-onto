@@ -45,7 +45,17 @@
 .questionPart {margin-top: 30px; max-width: 75%;}
 .cardinalitySelect {text-align-last:center;}
 .container {max-width: 100%;}
-.optionButtons {position: absolute; margin-left: 50px; left: 65%; }
+
+@media only screen and (min-width: 768px) {
+  .optionButtons {position: absolute; margin-left: 50px; left: 65%; }
+  .questionTitle:first-line {font-size: 28px;}
+}
+
+@media only screen and (max-width: 767px) {
+  .optionButtons {position: absolute; margin-left: 50px; left: 65%; margin-top: 35px;}
+  #cancelBtn {display: none;}
+}
+
 .changeAlert {margin-top: 15px; display: none;}
 .questionTitle {white-space: pre-wrap; font-size: 20px;}
-.questionTitle:first-line {font-size: 28px;}
+

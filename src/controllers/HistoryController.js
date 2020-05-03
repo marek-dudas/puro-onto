@@ -1,5 +1,3 @@
-import EventController from "./EventController";
-
 export default class HistoryController {
     constructor ()
     {

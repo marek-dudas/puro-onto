@@ -85,20 +85,19 @@
     {"key" : "to","offer": ["Mode", "Quality"]},
     {"key": "cardinality", "fromT": [1], "toT": [1,"1..*"]}
   ],
-  
-
 
   "Mode":[
     {"key": "superType", "type": []},
     {"key": "subType", "type": []}
     ],
 
-    "Quality":[
-      {"key": "superType", "type": []},
-      {"key": "subType", "type": []},
-      {"key": "connect", "type": ["Quality", "None"]},
-      {"key": "connected", "type": ["Quality"], "connect":["Quality"], "moreThanOne": true, "mincCountount":2 , "maxCount": 5}
-      ],
+  "Quality":[
+    {"key": "superType", "type": []},
+    {"key": "subType", "type": []},
+    {"key": "connect", "type": ["Quality", "None"]},
+    {"key": "connected", "type": ["Quality"], "connect":["Quality"], "moreThanOne": true, "mincCountount":2 , "maxCount": 5}
+    ],
+
   "Role":[
     {"key": "superType", "type": ["Kind", "Subkind", "Mode","Collective", "None"]},
     {"key": "subType", "type": []},

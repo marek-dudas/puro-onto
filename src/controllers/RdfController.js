@@ -25,7 +25,7 @@ export default class RdfController extends MainController {
             },
             error: function (jqXHR, textStatus, errorThrown) {
              alert("There is the problem to load serialized PURO model! \n" + errorThrown ); 
-             //window.location.replace(document.referrer); 
+             window.location.replace(document.referrer); 
             }
         });
         
@@ -33,7 +33,7 @@ export default class RdfController extends MainController {
      
     }
 
-
+    // get elements connect to relator
     getRelatorBtype  (relator, fromUri) 
     {
             const query = `
@@ -64,12 +64,9 @@ export default class RdfController extends MainController {
                     resolve(result);
                   }); 
            });
-
-
-
     }
 
-
+    // get elements related to B-Relation
     findBTypeRelation (fatherElement, returnArr,endCall)  
     {       
 
@@ -92,8 +89,6 @@ export default class RdfController extends MainController {
         
                 if (result.length > 0)
                 {
-                    // otestovat jak funguje v případě dvou 
-                    
                     for (let i in result) {
                         returnArr.push(result[i]);
                         this.findBTypeRelation(result[i],returnArr,endCall);
@@ -101,7 +96,6 @@ export default class RdfController extends MainController {
                 }
                 else
                 {
-                    //POZOR MUZE BYT CHYB kvuli opakovani
                     endCall(returnArr);
                     return returnArr;
                 }
@@ -109,8 +103,8 @@ export default class RdfController extends MainController {
          }
 
 
-
-    findBTypeChild  (fatherElement, returnArr,endCall) 
+        // get children of the element
+        findBTypeChild  (fatherElement, returnArr,endCall) 
         {
                 const elementsUri = fatherElement.uri.value;
                 
@@ -154,6 +148,7 @@ export default class RdfController extends MainController {
                 });          
              }
 
+             //get all entities from PURO model
              getFullPath ()  
              {
                  const query = `
@@ -172,14 +167,12 @@ export default class RdfController extends MainController {
                  }`;
                  return new Promise(resolve => {
                   
-                  // instance může mít mnohem více dětí!!!! zaměř se na to a dej si na to pozor!!!
                   this.sparqlQuery(query, result => {
                       result.forEach(function(node) {
                             
                             node.father = [];
                             node.fatherType = [];
                             node.fatherTypeRelation = [];
-                            // tady to nastav ve SPARQ 
                             node["connectFrom"] = [];
                     });
                   
@@ -193,6 +186,7 @@ export default class RdfController extends MainController {
              });
              }
 
+             // delete doubled properties 
              uniquePropertie (elements)
              {
                 for (let element of elements)
@@ -221,7 +215,6 @@ export default class RdfController extends MainController {
                             {
                                 if (Array.isArray(elements[i][property]))
                                 {
-                                   //raassss
                                    elements[j][property] = elements[j][property].filter(e => e !== elements[i][property]); 
                                    elements[i][property] = elements[i][property].concat(elements[j][property]); 
                                 }
@@ -237,7 +230,6 @@ export default class RdfController extends MainController {
 
              recursiveFindChild (i, result, bTypeTree,lastCall, type)
              {      
-                 //last change 
                  if(i >= result.length)
                  {
                      lastCall(bTypeTree);
@@ -264,6 +256,7 @@ export default class RdfController extends MainController {
     
              }
 
+             // prepare sparql query
              sparqlQuery (sparql, callback)  {
                 const puroXML = new XMLSerializer().serializeToString(this.puroXML);
                
@@ -291,9 +284,7 @@ export default class RdfController extends MainController {
                  
             }; 
 
-
-     
-            //from nebo to poslat si ukazatel? 
+            // get elements connected to B-Relation
             getRelationBTypes (relationUri) 
             {
                 let query = `
@@ -309,10 +300,7 @@ export default class RdfController extends MainController {
                  }`; 
 
                  return new Promise(resolve => {
-                    // instance může mít mnohem více dětí!!!! zaměř se na to a dej si na to pozor!!!
                     this.sparqlQuery(query, (result) => {
-                        // result.push({uri: {token:"uri", value: relationUri}});
-                        console.log(result);
                         this.recursiveFindChild(0,result,[], function lastCall(lastResult){
                                resolve(lastResult);
                        },"relation");
@@ -322,10 +310,9 @@ export default class RdfController extends MainController {
 
             }
 
-            //začátek hlavního
+            // get all B-Relations
             getRelations  () 
             {
-                // ještě by to chtělo sjednotit do pole 
                 const query = `
                 PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
                 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -344,28 +331,6 @@ export default class RdfController extends MainController {
                   ?to a ?toType . 
                   ?from a ?fromType .
                 }`;
-
-                /*
-                                var query = `
-                PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
-                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                SELECT ?uri ?valuation ?from ?to ?toType ?fromType ?label ?type  WHERE 
-                {
-                  ?uri a puro:BRelation . 
-                  ?from puro:linkedTo ?uri .
-                  ?uri puro:linkedTo ?to .
-                  ?uri rdfs:label ?label . 
-                  ?uri a ?type .
-                  OPTIONAL {?uri puro:linkedTo ?valuation. ?valuation a puro:BValuation}
-                  {?from a puro:BObject}
-                  UNION 
-                  {?from a puro:BType}
-                  {?to a puro:BObject}
-                  UNION
-                  {?to a puro:BType}   
-                  ?to a ?toType . 
-                  ?from a ?fromType . 
-                }`; */
                 
                 return new Promise(resolve => {
                     this.sparqlQuery(query, function callback(result) {
@@ -376,6 +341,7 @@ export default class RdfController extends MainController {
                   }); 
             }
 
+            // get linked element
             findRelation  (elementUri) {
                 var query = `
                 PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
@@ -393,6 +359,7 @@ export default class RdfController extends MainController {
 
             }
 
+            // initalization
             async firstFind  ()  {
                 var query = `
                 PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
@@ -415,12 +382,11 @@ export default class RdfController extends MainController {
                   });       
             }
 
-            //result[index].connect
+            //delete duplicity in results
             deleteDuplicity  (result, properties) {
-                var duplicity;
-                var checkArr = []; 
-                
-                // sjednocení datových typů na pole
+                let duplicity;
+                let checkArr = []; 
+                 
                 for (var res of result)
                 {
                     for (let property of properties)

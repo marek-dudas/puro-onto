@@ -1,7 +1,6 @@
 import $ from 'jquery';
 export default class MainController{
     
-    
     ontologyURL  = "http://lod2-dev.vse.cz/ontology/puro#"; 
     ontoUri = "http://lod2-dev.vse.cz/data/ontomodels#"
 
@@ -24,8 +23,6 @@ export default class MainController{
         const windowUrl = new URL(window.location.href);
         this.modelId = windowUrl.searchParams.get("model");
     }
-    // orgin lze držet jako property objektu 
-    // uri lze držet v property objektu 
 
     debug (element, text)
     {
@@ -34,9 +31,6 @@ export default class MainController{
 
     createButtons (buttons, title, type, elName, origName = "") 
     {
-        
-        
-        //"uri": unfinishedTypes[0].element
         buttons = !Array.isArray(buttons)? [buttons] : buttons;
         const mapButtons = buttons.map(buttonType => {
             return {name: buttonType};
@@ -93,7 +87,6 @@ export default class MainController{
         let index = 0; 
         for (let node of tree)
         {
-            // && !node.fatherTypeRelation.includes("http://lod2-dev.vse.cz/ontology/puro#instanceOf")
             if (this.delUri(node.type.value) === "BType")
             {
                 index ++; 
@@ -137,6 +130,4 @@ export default class MainController{
     {
         return  direction = direction === "from" ? "to" : "from"; 
     }
-
-
 }
