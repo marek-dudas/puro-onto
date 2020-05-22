@@ -20,11 +20,17 @@ export default class RdfController extends MainController {
             success: function(xml) {
           
                 this.puroXML = xml;
-                console.log(this.puroXML)
                 puro = xml; 
             },
             error: function (jqXHR, textStatus, errorThrown) {
-             alert("There is the problem to load serialized PURO model! \n" + errorThrown ); 
+             if (document.referrer.substring(0,5).toLowerCase() !== "https")
+             {
+                alert("You are redirected from insecured website! \nPlease add this site to exceptions in broswer to let it work.\n Settings -> privacy and security -> web settings -> insecure content -> add tomiaro.github.io"); 
+             }
+             else
+             {
+                alert("There is the problem to load serialized PURO model! \nCheck the model ID in URL!\n"+ errorThrown );
+             }
              window.location.replace(document.referrer); 
             }
         });

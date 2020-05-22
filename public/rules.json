@@ -38,11 +38,11 @@
   ],
 
   "commonRules":[
-      {"childPuro": ["none"], "fatherOnto": ["Mode"], "connection": 0, "offer": ["Subkind","Role","Mode","None"]},
-      {"childPuro": ["none"], "fatherOnto": ["Role"], "connection": 0, "offer": ["Kind", "Subkind", "Role", "Collective", "None"] },
-      {"childPuro": ["none"], "fatherOnto": ["Subkind"], "connection": 0, "offer": ["Kind", "Subkind", "Collective", "None"] },
-      {"childPuro": ["none"], "fatherOnto": ["Kind"], "connection": 0, "offer": ["Subkind", "Mode", "None"]},
-      {"childPuro": ["none"], "fatherOnto": ["NoRelation"], "connection": 0, "offer": ["Kind", "Role"] }
+      { "fatherOnto": ["Mode"], "offer": ["Subkind","Role","Mode","None"]},
+      { "fatherOnto": ["Role"], "offer": ["Role","None"] },
+      { "fatherOnto": ["Subkind"], "offer": ["Subkind","Phase","Role", "None"] },
+      { "fatherOnto": ["Kind"],  "offer": ["Subkind", "Mode","Role", "None"]},
+      { "fatherOnto": ["NoRelation"], "offer": ["Kind", "Role"] }
         
     ],
 
@@ -55,23 +55,23 @@
     {"type": "relSpecific", "question": "In term of VAL relationship."},
     {"type": "bRelation", "question":"Which type is relation VAL?"},
     {"type": "valuations", "question": "Which Datatype represents VAL?"},
-    {"type": "singleUniv", "question": "What is the TYPE of VAL?"}
+    {"type": "singleUniv", "question": "What is the TYPE of the VAL?"}
   ],
   
   
   "Relator":[
-    {"key": "from", "bTypeNumber": ["1","2", "3","4"], "offer": ["Kind", "Role", "Category","Collective"],
+    {"key": "from", "bTypeNumber": ["1","2", "3","4"], "offer": ["Kind", "Role", "Category"],
       "1": {"Kind": ["Subkind","Role"], "Collective": ["Kind", "Subkind","Role"], "Category":["Kind"], "Subkind":["Subkind","Role","None"]},
       "2": {"Kind": ["Subkind", "Role"], "Subkind": ["Subkind","Role"]},
       "3": {"Subkind": ["Role"]}
     },
-    {"key" : "to","bTypeNumber": ["1","2"], "offer": ["Kind", "Role", "Category", "Collective"],
+    {"key" : "to","bTypeNumber": ["1","2"], "offer": ["Kind", "Role"],
       "1": {"Kind": ["Subkind","Role"], "Collective": ["Kind", "Subkind", "Role"], "Category":["Kind"], "Subkind":["Role","Subkind","None"]},
       "2": {"Kind": ["Subkind", "Role", "None"], "Subkind": ["Role","Subkind", "None"]},
       "3": {"Subkind": ["Role","None"]}
     },
-    {"key" : "to","bTypeNumber": ["3","4","5","6"], "offer": ["Kind", "Role","Mode","Category", "Collective"],
-      "1": {"Kind": ["Role", "Subkind"],"Mode": [ "Kind", "Subkind","Role"], "Collective": ["Kind", "Subkind", "Role"], "Category":["Kind"], "Subkind":["Role","Subkind","None"]},
+    {"key" : "to","bTypeNumber": ["3","4","5","6"], "offer": ["Kind", "Role","Mode","Category"],
+      "1": {"Kind": ["Subkind","Role"],"Mode": [ "Kind", "Subkind","Role"], "Collective": ["Kind", "Subkind", "Role"], "Category":["Kind"], "Subkind":["Subkind","Role","None"]},
       "2": {"Kind": ["Subkind", "Role", "None"], "Subkind": ["Role","Subkind", "None"]},
       "3": {"Subkind": ["Role","None"]}
     },
@@ -79,9 +79,10 @@
   ],
   
   "Characterization":[
-    {"key": "from", "bTypeNumber": ["2"], "offer": ["Kind", "Collective", "Category"],
+    {"key": "from", "bTypeNumber": ["2", "3", "4", "5", "6"], "offer": ["Kind", "Role", "Category"],
     "1": {"Collective": ["Kind", "Subkind"], "Category": ["Kind","Subkind"], "Kind":["Subkind", "None"]}},
     {"key": "from", "bTypeNumber": ["1"], "offer": ["Kind"]},
+    
     {"key" : "to","offer": ["Mode", "Quality"]},
     {"key": "cardinality", "fromT": [1], "toT": [1,"1..*"]}
   ],
@@ -102,7 +103,7 @@
     {"key": "superType", "type": ["Kind", "Subkind", "Mode","Collective", "None"]},
     {"key": "subType", "type": []},
     {"key": "connect", "type": ["Relator", "None"]},
-    {"key": "connected", "type": ["Relator"], "superType":["Kind", "Subkind", "Collective"]}
+    {"key": "connected", "type": ["Relator"], "superType":["Kind"], "question": "singleUniv"}
     ],
 
   "Collective":[

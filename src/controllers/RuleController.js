@@ -16,7 +16,6 @@ export default class RuleController extends MainController {
         }
         else
         {
-            console.log(rules)
             commands = this.getSpecificRule(rules,key, false, countBtypes);
             offerTypes = commands.offer;  
         }
@@ -83,10 +82,9 @@ export default class RuleController extends MainController {
             
             for (let rule of rules)
             {
-             
-                check = this.elementConsistencySelection(rule,elTypes.connect,"connect",element,check,rules,elTypes, ontoController);
-                check = this.elementConsistencySelection(rule,elTypes.superType,"superType",element,check,rules,elTypes,ontoController);
-                check = this.elementConsistencySelection(rule,elTypes.subType,"subType",element,check,rules,elTypes, ontoController);
+                check = this.elementConsistencySelection(rule,elTypes,"superType",element,check,rules,elTypes,ontoController);
+                check = this.elementConsistencySelection(rule,elTypes,"subType",element,check,rules,elTypes, ontoController);
+                check = this.elementConsistencySelection(rule,elTypes,"connect",element,check,rules,elTypes, ontoController);
                 if (rule.key === "moreThanOne")
                 {
                     check = this.moreThanOneRule(ontoController,element,rule.minCount,rule.maxCount,check);
@@ -114,10 +112,9 @@ export default class RuleController extends MainController {
     {
         if(rule.key === key)
         {
-                
                 const suffix = key[key.length - 1] === "e" ? "d" : "ed";
                 const additionalRules =  this.getSpecificRule(rules, key + suffix, true);
-                if (!rule.type.some(r=> elTypes.includes(r)) && rule.type.length > 0 )
+                if (!rule.type.some(r=> elTypes[key].includes(r)) && rule.type.length > 0 )
                 {
                     check.push({key: key, types: rule.type, element:element.uri, rule:rule});
                 }
@@ -127,11 +124,20 @@ export default class RuleController extends MainController {
                     {
                         for (let addRule of additionalRules)
                         {
-                            if (addRule.type.some(r=> elTypes.includes(r))) {
-                                check = this.elementConsAddSelection("superType",addRule,elTypes,check,element,allTypes);
-                                check = this.elementConsAddSelection("subType",addRule,elTypes,check,element,allTypes);
-                                check = this.elementConsAddSelection("connect",addRule,elTypes,check,element,allTypes);
-                                if ("moreThanOne" in addRule && addRule["moreThanOne"] === true && elTypes.length < 2)
+                            if (addRule.type.some(r=> elTypes[key].includes(r))) {
+                                check = this.elementConsAddSelection("connect",addRule,elTypes[key],check,element,allTypes); 
+                                
+                                if (elTypes["superType"].length === 0)
+                                {
+                                    check = this.elementConsAddSelection("superType",addRule,elTypes[key],check,element,allTypes);
+                                }
+
+                                if (elTypes["subType"].length === 0)
+                                {
+                                    check = this.elementConsAddSelection("subType",addRule,elTypes[key],check,element,allTypes);
+                                }  
+                                
+                                if ("moreThanOne" in addRule && addRule["moreThanOne"] === true && elTypes[key].length < 2)
                                 {
                                     check = this.moreThanOneRule(ontoController,element,addRule.mincCountount,addRule.maxCount,check);
                                 }
@@ -149,7 +155,7 @@ export default class RuleController extends MainController {
     
         if (type in rule)
         {
-      
+            
             if (!rule[type].some(r=> allTypes[type].includes(r)) && rule[type].length > 0 )
             {
                 

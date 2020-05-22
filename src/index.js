@@ -331,6 +331,8 @@ class TypeButtons extends React.Component {
           <a className="btn btn-success btnEnd" href={this.props.svgUrl} download="ontoUml-graph.svg">Download Onto-UML graph</a>
           <button type="button" className="btn btn-success btnEnd" onClick={() => this.props.onClickDownloadSchema()}>Download Onto-Schema</button>
         </div>
+
+
       );
     }
     else {
