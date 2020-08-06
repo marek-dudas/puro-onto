@@ -2,7 +2,7 @@
   "name": "puro-onto",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://tomiaro.github.io/puro-onto-test/",
+  "homepage": "/puro-ontouml/",
   "dependencies": {
     "ajv": "^6.11.0",
     "bootstrap": "^4.3.1",

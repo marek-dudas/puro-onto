@@ -20,9 +20,9 @@ class Layout extends React.Component {
 
     this.eventController = new EventController();
     this.state = {
-      svg: "", iframeURL: this.eventController.getIframeURL(), fullSize: false 
+      svg: "", iframeURL: this.eventController.getIframeURL(), fullSize: false
     };
-    
+
     mermaid.initialize({
       startOnLoad: false,
       themeCSS: '#extensionEnd { fill: white; } #extensionStart { fill: white; } ',
@@ -31,10 +31,10 @@ class Layout extends React.Component {
 
   createGraph = (svg) => {
 
-    this.setState({ svg: svg });  
+    this.setState({ svg: svg });
   }
 
-  
+
   render() {
     return (
       <div className="container">
@@ -51,7 +51,7 @@ class Layout extends React.Component {
                 position="relative"/>
             </div>
           </div>
-   
+
           <div className="form-group col-md-6" id="ontoModelContainer">
             <TransformWrapper
               enablePadding={false}>
@@ -87,7 +87,7 @@ class QuestionPart extends React.Component {
     super(props);
     this.state = {
       startTransform: true, originalName: "", nameWasChange: false,
-      buttons: [], changeName: false, elName: "", type: "", undoActive: false, svg: "", 
+      buttons: [], changeName: false, elName: "", type: "", undoActive: false, svg: "",
     };
 
     this.eventController = this.props.eventController;
@@ -121,7 +121,7 @@ class QuestionPart extends React.Component {
     let nameWasChange = this.state.nameWasChange;
 
     elName = elName.trim();
-    elName = elName.replace(/ /g,"_"); 
+    elName = elName.replace(/ /g,"_");
 
     if ((elName === "" && this.state.changeName === true && type !== "Undo") && selectedType.toLowerCase() !== "none") {
       alert("Plese write name of the element!");
@@ -151,13 +151,14 @@ class QuestionPart extends React.Component {
       }
       elName = elName.replace(/\s/g, '_');
 
-      if (elName !== "" && this.state.changeName === true && !this.eventController.checkDuplicity(elName)) {
-        alert("Element already exists! Please choose different name.")
-      }
-      else if (setState === true) {
-       
+      // if (elName !== "" && this.state.changeName === true && !this.eventController.checkDuplicity(elName)) {
+      //   alert("Element already exists! Please choose different name.")
+      // }
+      // else
+        if (setState === true) {
+
         this.eventController.nextElement(selectedType, selectedUri, type, elName, nameWasChange).then(results => {
-          
+
           if (results === undefined || false) alert("Rule is not defined. \n Check rules.json")
 
           if (undo === false) {
@@ -340,7 +341,7 @@ class TypeButtons extends React.Component {
         <div className="row col-md-6 mx-auto">
           {this.props.buttons.map((value, index) => {
             return <div className="col-md-4 mx-auto" key = {index}>
-              <button key={this.props.uri} type="button" className={value.name.toLowerCase() === "none" ? " btn btn-secondary btnModal" : "btn btn-success btnModal"} onClick={() => this.props.onClick(value.name, value.uri, this.props.type, value.origin)} >{(this.props.type.includes("dataType") || 
+              <button key={this.props.uri} type="button" className={value.name.toLowerCase() === "none" ? " btn btn-secondary btnModal" : "btn btn-success btnModal"} onClick={() => this.props.onClick(value.name, value.uri, this.props.type, value.origin)} >{(this.props.type.includes("dataType") ||
               this.props.title.split(" ").includes(value.name) || (this.props.originalName === "" && this.props.buttons.length === 1) || (value.name.toLowerCase() === "relator" && this.props.buttons.length === 1)) ? "Next" : value.name}</button>
             </div>
           })}

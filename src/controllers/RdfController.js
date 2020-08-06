@@ -3,12 +3,12 @@ import MainController from './MainController';
 
 
 export default class RdfController extends MainController {
-    
+
     constructor() {
-        super(); 
+        super();
         this.rdf = require('rdflib');
         let puro ;
-        
+
         const modelURL = this.rulesJson["modelURL"].replace("MODELID", this.modelId)
         // puroOutput.xml
         $.ajax({
@@ -18,29 +18,30 @@ export default class RdfController extends MainController {
             cache: false,
             dataType: "xml",
             success: function(xml) {
-          
+
                 this.puroXML = xml;
-                puro = xml; 
+                puro = xml;
             },
             error: function (jqXHR, textStatus, errorThrown) {
-             if (document.referrer.substring(0,5).toLowerCase() !== "https")
-             {
-                alert("You are redirected from insecured website! \nPlease add this site to exceptions in broswer to let it work.\n Settings -> privacy and security -> web settings -> insecure content -> add tomiaro.github.io"); 
-             }
-             else
-             {
+             // if (document.referrer.substring(0,5).toLowerCase() !== "https")
+             // {
+             //    alert("You are redirected from insecured website! \nPlease add this site to exceptions in broswer to let it work.\n Settings -> privacy and security -> web settings -> insecure content -> add tomiaro.github.io");
+             // }
+             // else
+             // {
+             //    alert("There is the problem to load serialized PURO model! \nCheck the model ID in URL!\n"+ errorThrown );
+             // }
                 alert("There is the problem to load serialized PURO model! \nCheck the model ID in URL!\n"+ errorThrown );
-             }
-             window.location.replace(document.referrer); 
+             // window.location.replace(document.referrer);
             }
         });
-        
-        this.puroXML = puro; 
-     
+
+        this.puroXML = puro;
+
     }
 
     // get elements connect to relator
-    getRelatorBtype  (relator, fromUri) 
+    getRelatorBtype  (relator, fromUri)
     {
             const query = `
             PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
@@ -66,15 +67,15 @@ export default class RdfController extends MainController {
             return new Promise(resolve => {
                 this.sparqlQuery(query, function callback(result) {
                      result = this.deleteDuplicity(result, ["valuation"])
-                    result["relationName"] = relator; 
+                    result["relationName"] = relator;
                     resolve(result);
-                  }); 
+                  });
            });
     }
 
     // get elements related to B-Relation
-    findBTypeRelation (fatherElement, returnArr,endCall)  
-    {       
+    findBTypeRelation (fatherElement, returnArr,endCall)
+    {
 
             const elementsUri = fatherElement.uri.value;
             const query = `
@@ -88,11 +89,11 @@ export default class RdfController extends MainController {
                  ?uri a ?type . 
                  ?uri rdfs:label ?label .         
              }`;
-            this.sparqlQuery(query, function callback(result) {  
-                
+            this.sparqlQuery(query, function callback(result) {
+
                 console.log(JSON.parse(JSON.stringify(result)));
                 result = this.deleteDuplicity(result, ["connect", "connectFrom", "father", "fatherType","fatherTypeRelation","child","childType","childRel"]);
-        
+
                 if (result.length > 0)
                 {
                     for (let i in result) {
@@ -105,15 +106,15 @@ export default class RdfController extends MainController {
                     endCall(returnArr);
                     return returnArr;
                 }
-            }.bind(this));          
+            }.bind(this));
          }
 
 
         // get children of the element
-        findBTypeChild  (fatherElement, returnArr,endCall) 
+        findBTypeChild  (fatherElement, returnArr,endCall)
         {
                 const elementsUri = fatherElement.uri.value;
-                
+
                 const query = `
                  PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -134,10 +135,10 @@ export default class RdfController extends MainController {
                      OPTIONAL {?connectFrom puro:linkedTo ?uri. ?connectFrom a puro:BRelation}
                      BIND ( <`+elementsUri+`>  AS ?father)
                  }`;
-                this.sparqlQuery(query, result => {  
+                this.sparqlQuery(query, result => {
                     this.debug(result);
                     result = this.deleteDuplicity(result, ["connect","connectFrom", "father", "fatherType","fatherTypeRelation","child","childType","childRel","valuation"]);
-                
+
                     if (result.length > 0)
                     {
                         for (let i in result) {
@@ -146,16 +147,16 @@ export default class RdfController extends MainController {
                         }
                     }
                     else
-                    { 
-                      
+                    {
+
                         endCall(returnArr);
                         return returnArr;
                     }
-                });          
+                });
              }
 
              //get all entities from PURO model
-             getFullPath ()  
+             getFullPath ()
              {
                  const query = `
                  PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
@@ -172,16 +173,16 @@ export default class RdfController extends MainController {
                      FILTER NOT EXISTS {?uri puro:instanceOf ?object}
                  }`;
                  return new Promise(resolve => {
-                  
+
                   this.sparqlQuery(query, result => {
                       result.forEach(function(node) {
-                            
+
                             node.father = [];
                             node.fatherType = [];
                             node.fatherTypeRelation = [];
                             node["connectFrom"] = [];
                     });
-                  
+
                       this.deleteDuplicity(result,["valuation", "connect", "childType", "child", "childRel"]);
                       this.recursiveFindChild(0,result,[], lastResult => {
                              lastResult = this.deleteDuplicityInFinal(lastResult);
@@ -192,7 +193,7 @@ export default class RdfController extends MainController {
              });
              }
 
-             // delete doubled properties 
+             // delete doubled properties
              uniquePropertie (elements)
              {
                 for (let element of elements)
@@ -208,7 +209,7 @@ export default class RdfController extends MainController {
                     }
                 }
 
-                return elements; 
+                return elements;
              }
 
              deleteDuplicityInFinal (elements)
@@ -221,21 +222,21 @@ export default class RdfController extends MainController {
                             {
                                 if (Array.isArray(elements[i][property]))
                                 {
-                                   elements[j][property] = elements[j][property].filter(e => e !== elements[i][property]); 
-                                   elements[i][property] = elements[i][property].concat(elements[j][property]); 
+                                   elements[j][property] = elements[j][property].filter(e => e !== elements[i][property]);
+                                   elements[i][property] = elements[i][property].concat(elements[j][property]);
                                 }
                             }
 
                             elements.splice(j, 1);
-                        }            
-                    }   
+                        }
+                    }
                 }
 
-                return elements; 
+                return elements;
              }
 
              recursiveFindChild (i, result, bTypeTree,lastCall, type)
-             {      
+             {
                  if(i >= result.length)
                  {
                      lastCall(bTypeTree);
@@ -247,51 +248,51 @@ export default class RdfController extends MainController {
                      {
                         this.findBTypeRelation(result[i],bTypeTree, final => {
                             i++;
-                            this.recursiveFindChild(i++, result, bTypeTree,lastCall, "relation");    
+                            this.recursiveFindChild(i++, result, bTypeTree,lastCall, "relation");
                         });
                      }
                      else
                      {
                         this.findBTypeChild(result[i],bTypeTree,  final => {
                             i++;
-                            this.recursiveFindChild(i++, result, bTypeTree,lastCall, type);    
+                            this.recursiveFindChild(i++, result, bTypeTree,lastCall, type);
                         });
                      }
 
                  }
-    
+
              }
 
              // prepare sparql query
              sparqlQuery (sparql, callback)  {
                 const puroXML = new XMLSerializer().serializeToString(this.puroXML);
-               
+
                 const store = this.rdf.graph();
                 const contentType = 'application/rdf+xml';
                 const baseUrl = "http://lod2-dev.vse.cz/";
-                
-                this.rdf.parse(puroXML, store, baseUrl, contentType); 
-        
+
+                this.rdf.parse(puroXML, store, baseUrl, contentType);
+
                 var turtle;
                  this.rdf.serialize(undefined, store, "http://www.w3sds.org/1999/02/22-rdf-syntax-ns#type", 'text/turtle', function(err, str){
                     turtle = str;
                 })
-        
+
                 const rdfstore = require('rdfstore');
                 rdfstore.create( function(err, store) {
                      store.load("text/turtle", turtle, function(err, results) {
                         store.execute(sparql,
                           function(err, results) {
                           callback(results);
-                            
+
                         });
                     });
                 });
-                 
-            }; 
+
+            };
 
             // get elements connected to B-Relation
-            getRelationBTypes (relationUri) 
+            getRelationBTypes (relationUri)
             {
                 let query = `
                  PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
@@ -303,7 +304,7 @@ export default class RdfController extends MainController {
                      {<`+relationUri+`> puro:subTypeOf ?uri}
                      ?uri a ?type .
                      ?uri rdfs:label ?label
-                 }`; 
+                 }`;
 
                  return new Promise(resolve => {
                     this.sparqlQuery(query, (result) => {
@@ -317,7 +318,7 @@ export default class RdfController extends MainController {
             }
 
             // get all B-Relations
-            getRelations  () 
+            getRelations  ()
             {
                 const query = `
                 PREFIX puro: <http://lod2-dev.vse.cz/ontology/puro#>
@@ -337,14 +338,14 @@ export default class RdfController extends MainController {
                   ?to a ?toType . 
                   ?from a ?fromType .
                 }`;
-                
+
                 return new Promise(resolve => {
                     this.sparqlQuery(query, function callback(result) {
                         result = this.deleteDuplicity(result,[ "from", "to", "toType", "fromType", "valuation"]);
                         console.log(result)
                         resolve(result);
                     }.bind(this));
-                  }); 
+                  });
             }
 
             // get linked element
@@ -356,12 +357,12 @@ export default class RdfController extends MainController {
                 {
                   <`+elementUri+`> puro:linkedTo ?uri . 
                 }`;
-                
+
                 return new Promise(resolve => {
                     this.sparqlQuery(query, function callback(result) {
                         resolve(result);
                     });
-                  }); 
+                  });
 
             }
 
@@ -375,76 +376,76 @@ export default class RdfController extends MainController {
                     {?child puro:instanceOf ?uri}
                      UNION
                     {?child puro:subTypeOf ?uri}
-                    ?uri rdfs:label ?label. asfadf
+                    ?uri rdfs:label ?label.
                     ?uri a puro:BType
                     FILTER NOT EXISTS {?uri puro:linkedTo ?obj}
                     FILTER NOT EXISTS {?uri puro:subTypeOf ?object}
                 }`;
-                
+
                 return new Promise(resolve => {
                     this.sparqlQuery(query, function callback(result) {
                         resolve(result);
                     });
-                  });       
+                  });
             }
 
             //delete duplicity in results
             deleteDuplicity  (result, properties) {
                 let duplicity;
-                let checkArr = []; 
-                 
+                let checkArr = [];
+
                 for (var res of result)
                 {
                     for (let property of properties)
-                    {               
+                    {
                         if (res[property] === null)
                         {
-                            res[property] = [];    
+                            res[property] = [];
                         }
                         else
                         {
-                            res[property] = [res[property].value]; 
-                        }        
+                            res[property] = [res[property].value];
+                        }
                     }
                 }
 
                 for (let index = result.length -1; index >= 0; index --) {
-                    
+
                     if (checkArr.includes(result[index].uri.value))
                     {
                             for (let property of properties)
                             {
                                 for (let k = result.length -1; k >= 0; k --) {
-                                duplicity = result[index][property];    
-                                if(result[k].uri.value === result[index].uri.value){     
-                                    
+                                duplicity = result[index][property];
+                                if(result[k].uri.value === result[index].uri.value){
+
                                     if (!duplicity.some(e => result[k][property].includes(e)))
-                                    {                                    
-                                        result[k][property] = result[k][property].concat(duplicity); 
+                                    {
+                                        result[k][property] = result[k][property].concat(duplicity);
                                         break;
                                     }
                                     else{
                                         if(property.includes("Type"))
                                         {
                                             if (result[k][property.split("Type")[0]].length !== result[k][property].length) {
-                                                result[k][property] = result[k][property].concat(duplicity); 
-                                                break; 
+                                                result[k][property] = result[k][property].concat(duplicity);
+                                                break;
                                             }
                                         }
-                                    }     
-                                }   
+                                    }
+                                }
                             }
                         }
-                        
+
                         result.splice(index, 1);
                     }
                     else
                     {
                         checkArr.push(result[index].uri.value);
-                    } 
+                    }
                 }
 
-                return result; 
+                return result;
 
             }
 
